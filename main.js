@@ -5,6 +5,7 @@ screen.setTransform(1,0,0,-1,screen.canvas.width/2,screen.canvas.height/2);
 function resizeWindow(){
     mainCanvas.width = document.documentElement.clientWidth;
     mainCanvas.height = document.documentElement.clientHeight;
+    screen.setTransform(1,0,0,-1,screen.canvas.width/2,screen.canvas.height/2);
 };
 function drawline(x0,y0,x1,y1,width){
     screen.lineWidth = width;
@@ -36,13 +37,34 @@ function fillScreen(color){
 function setColor(color){
     screen.strokeStyle = color;
 };
-function proj3D(x,y,z){
 
-}
+function Mvec(v,M){
+    //Returns the vector result of matrix M*v with v as a column vec
+    //where matrix M is defined by indecies in M:
+    //[[0,3,6],
+    // [1,4,7],
+    // [2,5,8]]
+    return [M[0]*v[0]+M[3]*v[1]+M[6]*v[2],
+            M[1]*v[0]+M[4]*v[1]+M[7]*v[2],
+            M[2]*v[0]+M[5]*v[1]+M[8]*v[2]];
+};
+function RotM(axis,theta){
+    //returns rotation matrix for rotating around axis by theta degrees
+    var ang = theta*Math.PI/180;
+    var c = Math.cos(ang);
+    var s = Math.sin(ang);
+
+};
+function proj3d(v){
+    //projects 3d point v to a point onscren
+    var vrel = Mvec([v[0]-camX,v[1]-camY,v[2]-camZ],camM);
+    return [screen.canvas.height/2*Math.tan(Math.PI*camFOV/360)*vrel[1]/vrel[0],screen.canvas.height/2*Math.tan(Math.PI*camFOV/360)*vrel[2]/vrel[0]];
+};
 var camX = 0;
 var camY = 0;
 var camZ = 0;
-var camFOV = 0;
+var camM = [1,0,0,0,1,0,0,0,1];
+var camFOV = 70;
 
 resizeWindow();
 fillScreen("Black");
