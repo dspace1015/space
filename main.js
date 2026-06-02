@@ -59,7 +59,7 @@ function RotM(axis,theta){
     if(axis =="x"){
         return [1,0,0,0,c,s,0,-s,c];
     }else if(axis =="y"){
-        return [c,0,s,0,1,0,-s,0,c];
+        return [c,0,-s,0,1,0,s,0,c];
     }else{
         return [c,s,0,-s,c,0,0,0,1];
     }
@@ -103,6 +103,27 @@ function drawsphere3d(v,r){
         drawCircle(p[0],p[1],0.5*r/depth3d(v)*screen.canvas.height/Math.tan(camFOV*Math.PI/360),0,true);
     }
 }
+function drawGrid(vertSteps,horSteps,M){
+    var u = 0;
+    while(u<2*Math.PI){
+        var v = 0;
+        while(v<Math.PI){
+            var p1 = [Math.cos(u)*Math.sin(v),Math.sin(u)*Math.sin(v),Math.cos(v)];
+            var p2 = [Math.cos(u+2*Math.PI/horSteps)*Math.sin(v),Math.sin(u+2*Math.PI/horSteps)*Math.sin(v),Math.cos(v)];
+            var p3 = [Math.cos(u)*Math.sin(v+Math.PI/vertSteps),Math.sin(u)*Math.sin(v+Math.PI/vertSteps),Math.cos(v+Math.PI/vertSteps)];
+            p1 = Mvec(p1,M);
+            p2 = Mvec(p2,M);
+            p3 = Mvec(p3,M);
+            p1 = addvec(p1,camV);
+            p2 = addvec(p2,camV);
+            p3 = addvec(p3,camV);
+            drawline3d(p1,p2,-1);
+            drawline3d(p1,p3,-1);
+            v += Math.PI/vertSteps;
+        }
+        u += 2*Math.PI/horSteps;
+    }
+}
 function orbit2xyz(a,e,i,L,w,v,vP){
     //a-semimajoraxis,e-eccentricity,i-inclination,L-longitude of ascending node,w-arg of peri,v-true anomaly
     //vP is position of object orbit is centered around
@@ -112,6 +133,18 @@ function orbit2xyz(a,e,i,L,w,v,vP){
     v = Mvec(v,RotM("z",L));
     v = addvec(v,vP);
     return v;
+}
+function meanAnom2TrueAnom(e,M){
+    var M2 = M % 360;
+    var E = (M2 + 180/Math.PI*e*Math.sin(Math.PI/180*M2));
+    var i = 0;
+    var dE = Infinity;
+    while(i<1000 || Math.abs(dE)>1e-8){
+        dE = (M2-(E - 180/Math.PI*e*Math.sin(Math.PI/180*E)))/(1-e*Math.cos(Math.PI/180*E));
+        E += dE;
+        i += 1;
+    }
+    return 360/Math.PI*Math.atan(Math.sqrt((1+e)/(1-e))*Math.tan(Math.PI/360*E));
 }
 function drawOrbit(a,e,i,L,w,vP,steps,width){
     var ang = 0;
@@ -131,28 +164,27 @@ var camV = [-3,0,0];
 var camM = [1,0,0,0,1,0,0,0,1];
 var camP = 0;
 var camY = 0;
+var camD = 3;
 camM = MtimesM(camM,RotM("z",-105));
 camM = MtimesM(camM,RotM("y",25));
 camV = [-2*camM[0],-2*camM[3],-2*camM[6]];
 var camFOV = 90;
 var pressedKeys = {};
+var mouse = {x:0,y:0,d:false};
+var mouseOld = {x:0,y:0,d:false};
 window.onkeyup = function(e){pressedKeys[e.keyCode] = false;}
 window.onkeydown = function(e) {pressedKeys[e.keyCode] = true;}
+window.onmousemove = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
+window.onmouseup = function(e){mouse.d = false};
+window.onmousedown = function(e){mouse.d = true};
+window.ondrag = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
+window.onwheel = function(e){camD *= Math.exp(0.25*(e.deltaY/100))};
 
-resizeWindow();
-fillScreen("Black");
-setColor("orange");
-drawline(50,50,100,100,2);
-setColor("#0c8dcf");
-drawCircle(150,150,10,2,true);
+function UpdateBodies(){
 
-function mainLoop(){
-    //time handling
-    Told = currentT;
-    currentT = new Date().getTime()/1000;
-    dt = currentT - Told; // deltatime
-    T = currentT;
-    requestAnimationFrame(mainLoop);
+}
+function UpdateCamera(){
+    //update camera
     if(pressedKeys[65]){
         camY += 90*dt;
     }
@@ -165,6 +197,10 @@ function mainLoop(){
     if(pressedKeys[87]){
         camP += 90*dt;
     }
+    if(mouseOld.d){
+        camP += -270*(mouse.y-mouseOld.y)/screen.canvas.height;
+        camY += 270*(mouse.x-mouseOld.x)/screen.canvas.height;
+    }
     if(camP>90){
         camP = 90;
     }
@@ -174,20 +210,38 @@ function mainLoop(){
     camM = [1,0,0,0,1,0,0,0,1];
     camM = MtimesM(camM,RotM("z",camY));
     camM = MtimesM(camM,RotM("y",camP));
-    camV = [-3*camM[0],-3*camM[3],-3*camM[6]];
+    camV = [-camD*camM[0],-camD*camM[3],-camD*camM[6]];
+    //update old mouse values to compare for next frame:
+    mouseOld.x = mouse.x;
+    mouseOld.y = mouse.y;
+    mouseOld.d = mouse.d;
+}
+function Render(){
     resizeWindow();
     fillScreen("#000000");
+    fillScreen("#ffffff");
+    drawGrid(12,24,RotM("x",0));
     setColor("#0000ff");
-    drawline3d([0,0,0],[0,0,1],0.01);
+    drawline3d([0,0,0],[0,0,1],-3);
     setColor("#00ff00");
-    drawline3d([0,0,0],[0,1,0],0.01);
+    drawline3d([0,0,0],[0,1,0],-3);
     setColor("#ff0000");
-    drawline3d([0,0,0],[1,0,0],0.01);
+    drawline3d([0,0,0],[1,0,0],-3);
     setColor("#0080ff");
-    drawOrbit(1,0.3,45,45,45,[0,0,0],120,1);
-    var p = orbit2xyz(1,0.3,45,45,45,45*T,[0,0,0])
+    drawOrbit(1,0.6,0,0,0,[0,0,0],120,3);
+    var p = orbit2xyz(1,0.6,0,0,0,meanAnom2TrueAnom(0.6,45*T),[0,0,0])
 
     drawsphere3d(p,0.1);
+}
+function mainLoop(){
+    //time handling
+    Told = currentT;
+    currentT = new Date().getTime()/1000;
+    dt = currentT - Told; // deltatime
+    T = currentT;
+    requestAnimationFrame(mainLoop);
+    UpdateCamera();
+    Render();
 }
 
 function initLoop(){
