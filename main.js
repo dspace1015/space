@@ -57,11 +57,11 @@ function RotM(axis,theta){
     var c = Math.cos(ang);
     var s = Math.sin(ang);
     if(axis =="x"){
-        return [1,0,0,0,c,-s,0,s,c];
+        return [1,0,0,0,c,s,0,-s,c];
     }else if(axis =="y"){
         return [c,0,s,0,1,0,-s,0,c];
     }else{
-        return [c,-s,0,s,c,0,0,0,1];
+        return [c,s,0,-s,c,0,0,0,1];
     }
 };
 function MtimesM(M1,M2){
@@ -89,9 +89,40 @@ function drawline3d(v1,v2,width){
     if(depth3d(v1)>0 && depth3d(v2)>0){
         var p1 = proj3d(v1);
         var p2 = proj3d(v2);
-        drawline(p1[0],p1[1],p2[0],p2[1],screen.canvas.height/Math.tan(camFOV*Math.PI/360)*width/(depth3d(v1)+depth3d(v2)));
+        if(width>0){
+            var w = screen.canvas.height/Math.tan(camFOV*Math.PI/360)*width/(depth3d(v1)+depth3d(v2));
+        }else{
+            var w = -width;
+        }
+        drawline(p1[0],p1[1],p2[0],p2[1],w);
     }
 }
+function drawsphere3d(v,r){
+    if(depth3d(v)>0){
+        p = proj3d(v);
+        drawCircle(p[0],p[1],0.5*r/depth3d(v)*screen.canvas.height/Math.tan(camFOV*Math.PI/360),0,true);
+    }
+}
+function orbit2xyz(a,e,i,L,w,v,vP){
+    //a-semimajoraxis,e-eccentricity,i-inclination,L-longitude of ascending node,w-arg of peri,v-true anomaly
+    //vP is position of object orbit is centered around
+    var v = [Math.cos(v*Math.PI/180)*a*(1-e*e)/(1+e*Math.cos(v*Math.PI/180)),Math.sin(v*Math.PI/180)*a*(1-e*e)/(1+e*Math.cos(v*Math.PI/180)),0]
+    v = Mvec(v,RotM("z",w));
+    v = Mvec(v,RotM("x",i));
+    v = Mvec(v,RotM("z",L));
+    v = addvec(v,vP);
+    return v;
+}
+function drawOrbit(a,e,i,L,w,vP,steps,width){
+    var ang = 0;
+    while(ang<360){
+        p1 = orbit2xyz(a,e,i,L,w,ang,vP);
+        p2 = orbit2xyz(a,e,i,L,w,ang+360/steps,vP);
+        drawline3d(p1,p2,-width);
+        ang += 360/steps;
+    }
+}
+
 var currentT = 0;
 var T = 0;
 var Told = 0;
@@ -102,7 +133,7 @@ var camP = 0;
 var camY = 0;
 camM = MtimesM(camM,RotM("z",-105));
 camM = MtimesM(camM,RotM("y",25));
-camV = [-3*camM[0],-3*camM[3],-3*camM[6]];
+camV = [-2*camM[0],-2*camM[3],-2*camM[6]];
 var camFOV = 90;
 var pressedKeys = {};
 window.onkeyup = function(e){pressedKeys[e.keyCode] = false;}
@@ -134,6 +165,12 @@ function mainLoop(){
     if(pressedKeys[87]){
         camP += 90*dt;
     }
+    if(camP>90){
+        camP = 90;
+    }
+    if(camP<-90){
+        camP = -90;
+    }
     camM = [1,0,0,0,1,0,0,0,1];
     camM = MtimesM(camM,RotM("z",camY));
     camM = MtimesM(camM,RotM("y",camP));
@@ -141,12 +178,17 @@ function mainLoop(){
     resizeWindow();
     fillScreen("#000000");
     setColor("#0000ff");
-    drawline3d([0,0,0],[0,0,1],0.1);
+    drawline3d([0,0,0],[0,0,1],0.01);
     setColor("#00ff00");
-    drawline3d([0,0,0],[0,1,0],0.1);
+    drawline3d([0,0,0],[0,1,0],0.01);
     setColor("#ff0000");
-    drawline3d([0,0,0],[1,0,0],0.1);
-};
+    drawline3d([0,0,0],[1,0,0],0.01);
+    setColor("#0080ff");
+    drawOrbit(1,0.3,45,45,45,[0,0,0],120,1);
+    var p = orbit2xyz(1,0.3,45,45,45,45*T,[0,0,0])
+
+    drawsphere3d(p,0.1);
+}
 
 function initLoop(){
     currentT = new Date().getTime/1000;
