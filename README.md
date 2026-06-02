@@ -1,4 +1,5 @@
 # space
-planetarium like project that will show you objects in the night sky.
+planetarium like web app that displays different objects in the night sky.
 
-dspace1015.github.io/space
+https://dspace1015.github.io/space
+
