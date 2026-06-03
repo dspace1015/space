@@ -139,7 +139,7 @@ function meanAnom2TrueAnom(e,M){
     var E = (M2 + 180/Math.PI*e*Math.sin(Math.PI/180*M2));
     var i = 0;
     var dE = Infinity;
-    while(i<1000 || Math.abs(dE)>1e-8){
+    while(i<1000 && Math.abs(dE)>1e-8){
         dE = (M2-(E - 180/Math.PI*e*Math.sin(Math.PI/180*E)))/(1-e*Math.cos(Math.PI/180*E));
         E += dE;
         i += 1;
@@ -155,8 +155,31 @@ function drawOrbit(a,e,i,L,w,vP,steps,width){
         ang += 360/steps;
     }
 }
-
-var currentT = 0;
+function addObjectOrbit(a,e,i,L,w,M0,t0,Parent,P){
+    orbitalParams.push({Parent:Parent,a:a,e:e,i:i,L:L,w:w,M0:M0,t0:t0,P:P});
+    objectPos.push([0,0,0]);
+}
+function addObject(name,R,color){
+    objectNames.push(name);
+    objectRadii.push(R);
+    objectColor.push(color);
+}
+function updateObjectId(id){
+    var orb = orbitalParams[id];
+    var v = meanAnom2TrueAnom(orb.e,orb.M0+360*(T-orb.t0)/orb.P);
+    if(orb.Parent == -1){
+        var parentpos = [0,0,0];
+    }else{
+        var parentpos = objectPos[orb.Parent];
+    }
+    objectPos[id] = orbit2xyz(orb.a,orb.e,orb.i,orb.L,orb.w,v,parentpos);
+}
+var orbitalParams = [];
+var objectPos = []
+var objectNames = [];
+var objectRadii = [];
+var objectColor = [];
+var currentT = new Date().getTime()/1000;
 var T = 0;
 var Told = 0;
 var dt = 0;
@@ -181,7 +204,11 @@ window.ondrag = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
 window.onwheel = function(e){camD *= Math.exp(0.25*(e.deltaY/100))};
 
 function UpdateBodies(){
-
+    var i = 0;
+    while(i<objectNames.length){
+        updateObjectId(i);
+        i += 1;
+    }
 }
 function UpdateCamera(){
     //update camera
@@ -227,11 +254,24 @@ function Render(){
     drawline3d([0,0,0],[0,1,0],-3);
     setColor("#ff0000");
     drawline3d([0,0,0],[1,0,0],-3);
-    setColor("#0080ff");
-    drawOrbit(1,0.6,0,0,0,[0,0,0],120,3);
-    var p = orbit2xyz(1,0.6,0,0,0,meanAnom2TrueAnom(0.6,45*T),[0,0,0])
-
-    drawsphere3d(p,0.1);
+    var i = 0;
+    while(i<objectNames.length){
+        var orb = orbitalParams[i];
+        setColor(objectColor[i]);
+        if(orb.Parent == -1){
+            var parentpos = [0,0,0];
+        }else{
+            var parentpos = objectPos[orb.Parent];
+        }
+        drawOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,parentpos,120,3);
+        i += 1;
+    }
+    var i = 0;
+    while(i<objectNames.length){
+        setColor(objectColor[i]);
+        drawsphere3d(objectPos[i],objectRadii[i]);
+        i += 1;
+    }
 }
 function mainLoop(){
     //time handling
@@ -240,6 +280,7 @@ function mainLoop(){
     dt = currentT - Told; // deltatime
     T = currentT;
     requestAnimationFrame(mainLoop);
+    UpdateBodies();
     UpdateCamera();
     Render();
 }
@@ -249,4 +290,8 @@ function initLoop(){
     Told = T;
     requestAnimationFrame(mainLoop);
 };
+addObjectOrbit(3,0.5,10,135,20,0,currentT,-1,8);
+addObject("Earth",0.1,"#0080ff");
+addObjectOrbit(0.3,0,0,0,0,0,currentT,0,1);
+addObject("Moon",0.035,"#808080");
 requestAnimationFrame(initLoop);
