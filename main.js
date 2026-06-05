@@ -7,6 +7,13 @@ function resizeWindow(){
     mainCanvas.height = document.documentElement.clientHeight;
     screen.setTransform(1,0,0,-1,screen.canvas.width/2,screen.canvas.height/2);
 };
+function leadingzeros(x,y){
+    var s = String((Math.round(x)));
+    while(s.length<y){
+        s = "0"+s;
+    }
+    return s;
+}
 function drawline(x0,y0,x1,y1,width){
     screen.lineWidth = width;
     screen.beginPath();
@@ -71,6 +78,9 @@ function MtimesM(M1,M2){
     v3 = Mvec([M1[6],M1[7],M1[8]],M2);
     return [v1[0],v1[1],v1[2],v2[0],v2[1],v2[2],v3[0],v3[1],v3[2]];
 }
+function mod(x,y){
+    return (x % y + y) % y;
+}
 function proj3d(v){
     //projects 3d point v to a point onscren
     var vrel = Mvec([v[0]-camV[0],v[1]-camV[1],v[2]-camV[2]],camM);
@@ -99,8 +109,13 @@ function drawline3d(v1,v2,width){
 }
 function drawsphere3d(v,r){
     if(depth3d(v)>0){
-        p = proj3d(v);
-        drawCircle(p[0],p[1],0.5*r/depth3d(v)*screen.canvas.height/Math.tan(camFOV*Math.PI/360),0,true);
+        var p = proj3d(v);
+        if(r>0){
+        var r2 = 0.5*r/depth3d(v)*screen.canvas.height/Math.tan(camFOV*Math.PI/360);
+        }else{
+            r2 = -r;
+        }
+        drawCircle(p[0],p[1],r2,0,true);
     }
 }
 function drawGrid(vertSteps,horSteps,M){
@@ -123,6 +138,15 @@ function drawGrid(vertSteps,horSteps,M){
         }
         u += 2*Math.PI/horSteps;
     }
+}
+function drawText(text,screenpos,Align,font){
+    screen.setTransform(1,0,0,1,0,0);
+    screen.fillStyle = screen.strokeStyle;
+    screen.textBaseline = "top";
+    screen.textAlign = Align;
+    screen.font = font;
+    screen.fillText(text,screenpos[0]+screen.canvas.width/2,screen.canvas.height/2-screenpos[1]);
+    screen.setTransform(1,0,0,-1,screen.canvas.width/2,screen.canvas.height/2);
 }
 function orbit2xyz(a,e,i,L,w,v,vP){
     //a-semimajoraxis,e-eccentricity,i-inclination,L-longitude of ascending node,w-arg of peri,v-true anomaly
@@ -156,8 +180,15 @@ function drawOrbit(a,e,i,L,w,vP,steps,width){
     }
 }
 function addObjectOrbit(a,e,i,L,w,M0,t0,Parent,P){
-    orbitalParams.push({Parent:Parent,a:a,e:e,i:i,L:L,w:w,M0:M0,t0:t0,P:P});
+    var period = P;
+    if(period == ""){
+        period = 2*Math.PI*Math.sqrt(Math.pow(a,3)/1.32712440018e20);
+    }
+    orbitalParams.push({Parent:Parent,a:a,e:e,i:i,L:L,w:w,M0:M0,t0:t0,P:period});
     objectPos.push([0,0,0]);
+}
+function updateorbit(id,a0,da,e0,de,i0,di,L0,dL,w0,dw,M0,t0){
+
 }
 function addObject(name,R,color){
     objectNames.push(name);
@@ -179,15 +210,16 @@ var objectPos = []
 var objectNames = [];
 var objectRadii = [];
 var objectColor = [];
-var currentT = new Date().getTime()/1000;
-var T = 0;
-var Told = 0;
+var currentT = 0.0;
+var T = 0.0;
+var TimeSpeed = 1;
+var Told = 0.0;
 var dt = 0;
 var camV = [-3,0,0];
 var camM = [1,0,0,0,1,0,0,0,1];
 var camP = 0;
 var camY = 0;
-var camD = 3;
+var camD = 1.4e11;
 camM = MtimesM(camM,RotM("z",-105));
 camM = MtimesM(camM,RotM("y",25));
 camV = [-2*camM[0],-2*camM[3],-2*camM[6]];
@@ -195,13 +227,15 @@ var camFOV = 90;
 var pressedKeys = {};
 var mouse = {x:0,y:0,d:false};
 var mouseOld = {x:0,y:0,d:false};
+var selectedBody = 0;
 window.onkeyup = function(e){pressedKeys[e.keyCode] = false;}
-window.onkeydown = function(e) {pressedKeys[e.keyCode] = true;}
+window.onkeydown = function(e) {pressedKeys[e.keyCode] = true;if(e.keyCode == 68){selectedBody = mod((selectedBody + 1),objectNames.length)};if(e.keyCode == 65){selectedBody = mod((selectedBody - 1),objectNames.length)};if(e.keyCode == 191){TimeSpeed *= -1}}
 window.onmousemove = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
 window.onmouseup = function(e){mouse.d = false};
 window.onmousedown = function(e){mouse.d = true};
 window.ondrag = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
 window.onwheel = function(e){camD *= Math.exp(0.25*(e.deltaY/100))};
+
 
 function UpdateBodies(){
     var i = 0;
@@ -212,21 +246,25 @@ function UpdateBodies(){
 }
 function UpdateCamera(){
     //update camera
-    if(pressedKeys[65]){
-        camY += 90*dt;
-    }
-    if(pressedKeys[68]){
-        camY -= 90*dt;
-    }
-    if(pressedKeys[83]){
-        camP -= 90*dt;
-    }
-    if(pressedKeys[87]){
-        camP += 90*dt;
-    }
     if(mouseOld.d){
         camP += -270*(mouse.y-mouseOld.y)/screen.canvas.height;
         camY += 270*(mouse.x-mouseOld.x)/screen.canvas.height;
+    }
+    if(pressedKeys[190]){
+        TimeSpeed *= Math.exp(3*dt);
+    }
+    if(pressedKeys[188]){
+        TimeSpeed *= Math.exp(-3*dt);
+    }
+    if(pressedKeys[82]){
+        TimeSpeed = 1;
+        T = currentT;
+    }
+    if(pressedKeys[83]){
+        camD *= Math.exp(3*dt);
+    }
+    if(pressedKeys[87]){
+        camD *= Math.exp(-3*dt);
     }
     if(camP>90){
         camP = 90;
@@ -238,6 +276,7 @@ function UpdateCamera(){
     camM = MtimesM(camM,RotM("z",camY));
     camM = MtimesM(camM,RotM("y",camP));
     camV = [-camD*camM[0],-camD*camM[3],-camD*camM[6]];
+    camV = addvec(camV,objectPos[selectedBody]);
     //update old mouse values to compare for next frame:
     mouseOld.x = mouse.x;
     mouseOld.y = mouse.y;
@@ -245,9 +284,9 @@ function UpdateCamera(){
 }
 function Render(){
     resizeWindow();
-    fillScreen("#000000");
     fillScreen("#ffffff");
-    drawGrid(12,24,RotM("x",0));
+    setColor("#404040");
+    drawGrid(12,24,MtimesM([1e15,0,0,0,1e15,0,0,0,1e15],RotM("x",0)));
     setColor("#0000ff");
     drawline3d([0,0,0],[0,0,1],-3);
     setColor("#00ff00");
@@ -266,19 +305,62 @@ function Render(){
         drawOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,parentpos,120,3);
         i += 1;
     }
-    var i = 0;
-    while(i<objectNames.length){
+    var i = objectNames.length - 1;
+    while(i>=0){
         setColor(objectColor[i]);
         drawsphere3d(objectPos[i],objectRadii[i]);
-        i += 1;
+        drawsphere3d(objectPos[i],-1);
+        var p = proj3d(objectPos[i]);
+        p[1] -= 0.5*objectRadii[i]/depth3d(objectPos[i])*screen.canvas.height/Math.tan(camFOV*Math.PI/360);
+        if(depth3d(objectPos[i])>0){
+            drawText(objectNames[i],p,"center","12px arial")
+        }
+        i -= 1;
     }
+    RenderUI();
+}
+function RenderUI(){
+    var now = new Date(T*1000);
+    var month = now.getMonth();
+    if(month == 0){
+        month = "Jan";
+    }else if(month == 1){
+        month = "Feb";
+    }else if(month == 2){
+        month = "Mar";
+    }else if(month == 3){
+        month = "Apr";
+    }else if(month == 4){
+        month = "May";
+    }else if(month == 5){
+        month = "Jun";
+    }else if(month == 6){
+        month = "Jul";
+    }else if(month == 7){
+        month = "Aug";
+    }else if(month == 8){
+        month = "Sep";
+    }else if(month == 9){
+        month = "Oct";
+    }else if(month == 10){
+        month = "Nov";
+    }else{
+        month = "Dec";
+    }
+    setColor("#ffffff");
+    drawText(leadingzeros(now.getHours(),2)+":"+leadingzeros(now.getMinutes(),2)+":"+leadingzeros(now.getSeconds(),2)+" "+month+" "+now.getDate()+" "+now.getFullYear(),[-screen.canvas.width/2+5,screen.canvas.height/2-5],"left","24px courier")
+    drawText(Math.round(TimeSpeed*100)/100+"x",[-screen.canvas.width/2+5,screen.canvas.height/2-5-24],"left","24px courier");
+    drawText("Selected Object:\n"+objectNames[selectedBody],[screen.canvas.width/2-5,screen.canvas.height/2-5],"right","24px courier");
 }
 function mainLoop(){
     //time handling
     Told = currentT;
     currentT = new Date().getTime()/1000;
     dt = currentT - Told; // deltatime
-    T = currentT;
+    if(dt != dt){ //Error correct because for some reason Date can return NaN
+        dt = 0;
+    }
+    T += TimeSpeed*dt;
     requestAnimationFrame(mainLoop);
     UpdateBodies();
     UpdateCamera();
@@ -286,12 +368,36 @@ function mainLoop(){
 }
 
 function initLoop(){
-    currentT = new Date().getTime/1000;
-    Told = T;
+    currentT = new Date().getTime()/1000;
+    Told = 0;
+    T = currentT;
     requestAnimationFrame(mainLoop);
 };
-addObjectOrbit(3,0.5,10,135,20,0,currentT,-1,8);
-addObject("Earth",0.1,"#0080ff");
-addObjectOrbit(0.3,0,0,0,0,0,currentT,0,1);
-addObject("Moon",0.035,"#808080");
+var AU = 149.598e9;
+var J2000 = 946684800;
+addObject("Sun",696e6,"#ffffaa");
+addObjectOrbit(0,0,0,0,0,0,J2000,-1,Infinity);
+addObject("Earth",6378009,"#0080ff");
+addObjectOrbit(AU,0.01671123,-0.00001531,0.0,102.93768193,-2.47311027,J2000,0,"");
+addObject("Moon",1738100,"#808080");
+addObjectOrbit(0.3844e9,0.0549,5.145,125.08,318.15,135.27,J2000,1,2371843.604625);
+addObject("Mercury",2439.7e3,"#a0a0a0");
+addObjectOrbit(0.38709893*AU,0.20563593,7.0049790,48.33961819,29.11810076,174.79394829,J2000,0,"");
+addObject("Venus",6052e3,"#ffffee");
+addObjectOrbit(0.72333199*AU,0.00677672,3.39467605,76.67984255,54.92262463,50.37663232,J2000,0,"");
+addObject("Mars",3389.5e3,"#a08040");
+addObjectOrbit(1.52366231*AU,0.09339410,1.84969142,49.55953891,-73.5031685,19.39019754,J2000,0,"");
+addObject("Jupiter",69911e3,"#ffa080");
+addObjectOrbit(5.20336301*AU,0.04838624,1.30439695,100.47390909,-85.74542926,19.66796068,J2000,0,"");
+addObject("Saturn",58232e3,"#ffffa0");
+addObjectOrbit(9.53707032*AU,0.05386179,2.48599187,113.63998702,-20.77862639,-42.78564734,J2000,0,"");
+addObject("Uranus",25362e3,"#c6e7e7");
+addObjectOrbit(19.18916464*AU,0.04725744,0.77263783,74.01692503,96.93735127,142.28382821,J2000,0,"");
+addObject("Neptune",24622e3,"#b0d0e0");
+addObjectOrbit(30.06992276*AU,0.00859048,1.77004347,131.78422574,-86.81946347,-100.08479196,J2000,0,"");
+
+
+
+
+
 requestAnimationFrame(initLoop);
