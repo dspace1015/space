@@ -81,6 +81,21 @@ function MtimesM(M1,M2){
 function mod(x,y){
     return (x % y + y) % y;
 }
+function atan2(x,y){
+    if(x<0){
+        return 180/Math.PI*Math.atan(y/x)+180;
+    }else if(x>0){
+        return 180/Math.PI*Math.atan(y/x);
+    }else if(x==0){
+        if(y>0){
+            return 90;
+        }else if(y<0){
+            return 270;
+        }else{
+            return 0;
+        }
+    }
+}
 function proj3d(v){
     //projects 3d point v to a point onscren
     var vrel = Mvec([v[0]-camV[0],v[1]-camV[1],v[2]-camV[2]],camM);
@@ -187,8 +202,16 @@ function addObjectOrbit(a,e,i,L,w,M0,t0,Parent,P){
     orbitalParams.push({Parent:Parent,a:a,e:e,i:i,L:L,w:w,M0:M0,t0:t0,P:period});
     objectPos.push([0,0,0]);
 }
-function updateorbit(id,a0,da,e0,de,i0,di,L0,dL,w0,dw,M0,t0){
-
+function updateOrbit(id,a0,da,e0,de,i0,di,L0,dL,w0,dw,M0,dM,t0){
+    var epoch = (T-t0);
+    orbitalParams[id].a = (a0 + da*epoch);
+    orbitalParams[id].e = e0 + de*epoch;
+    orbitalParams[id].i = i0 + di*epoch;
+    orbitalParams[id].L = L0 + dL*epoch;
+    orbitalParams[id].w = w0 + dw*epoch;
+    orbitalParams[id].M0 = M0;
+    orbitalParams[id].P = 360/dM;
+    orbitalParams[id].t0 = t0;
 }
 function addObject(name,R,color){
     objectNames.push(name);
@@ -220,15 +243,16 @@ var camM = [1,0,0,0,1,0,0,0,1];
 var camP = 0;
 var camY = 0;
 var camD = 1.4e11;
+var drawOrbits = true;
 camM = MtimesM(camM,RotM("z",-105));
 camM = MtimesM(camM,RotM("y",25));
 camV = [-2*camM[0],-2*camM[3],-2*camM[6]];
-var camFOV = 90;
+var camFOV = 70;
 var pressedKeys = {};
 var mouse = {x:0,y:0,d:false};
 var mouseOld = {x:0,y:0,d:false};
 var selectedBody = 0;
-window.onkeyup = function(e){pressedKeys[e.keyCode] = false;}
+window.onkeyup = function(e){pressedKeys[e.keyCode] = false;if(e.keyCode == 79){drawOrbits = 1-drawOrbits;}}
 window.onkeydown = function(e) {pressedKeys[e.keyCode] = true;if(e.keyCode == 68){selectedBody = mod((selectedBody + 1),objectNames.length)};if(e.keyCode == 65){selectedBody = mod((selectedBody - 1),objectNames.length)};if(e.keyCode == 191){TimeSpeed *= -1}}
 window.onmousemove = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
 window.onmouseup = function(e){mouse.d = false};
@@ -236,7 +260,18 @@ window.onmousedown = function(e){mouse.d = true};
 window.ondrag = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
 window.onwheel = function(e){camD *= Math.exp(0.25*(e.deltaY/100))};
 
-
+function UpdateOrbits(){
+    var AU = 149.598e9;
+    var cenTosec = 36525*86400;
+    var yrTosec = 365.25*86400;
+    var J2000 = new Date(2000,0,1,12,0,0,0);
+    J2000 = J2000.getTime()/1000 - 60*(J2000.getTimezoneOffset());
+    updateOrbit(1,1.00000261*AU,0.00000562*AU/cenTosec,0.01671123,-0.00004392/cenTosec,-0.00001531,-0.01294668/cenTosec,0.0,0.0/cenTosec,102.93768193,0.32327364/cenTosec,100.46457166-102.93768193,(35999.37244981-0.32327364)/cenTosec,J2000);
+    updateOrbit(2,384400e3,3.8/cenTosec,0.0554,0,5.16,0,125.08,-360/(18.600*yrTosec),318.15,360/(5.997*yrTosec),135.27,360/(27.322*86400) - 360/(5.997*yrTosec) + 360/(18.600*yrTosec),J2000);
+    updateOrbit(3,0.38709843*AU,0.00000000*AU/cenTosec,0.20563661,0.00002123/cenTosec,7.00559432,-0.00590158/cenTosec,48.33961819,-0.12534081/cenTosec,77.45771895-48.33961819,(0.16047689+0.12534081)/cenTosec,252.25166724-77.45771895,(149472.67486623-0.15940013)/cenTosec,J2000)
+    updateOrbit(4,0.72333566*AU,0.00000390*AU/cenTosec,0.00677672,-0.00004107/cenTosec,3.39467605,-0.00078890/cenTosec,76.67984255,-0.27769418/cenTosec,131.60246718-76.67984255,(0.00268329+0.27769418)/cenTosec,181.97909950-131.60246718,(58517.81538729 - 0.00268329)/cenTosec,J2000);
+    updateOrbit(5,1.52371034*AU,0.00001847*AU/cenTosec,0.09339410,0.00007882/cenTosec,1.84969142,-0.00813131/cenTosec,49.55953891,-0.29257343/cenTosec,-23.94362959 - 49.55953891,(0.44441088 + 0.29257343)/cenTosec,-4.55343205 + 23.94362959,(19140.30268499 -0.44441088)/cenTosec,J2000);
+}
 function UpdateBodies(){
     var i = 0;
     while(i<objectNames.length){
@@ -246,6 +281,22 @@ function UpdateBodies(){
 }
 function UpdateCamera(){
     //update camera
+    if(mouseOld.d == true && mouse.d == false){
+        var m = [mouse.x-screen.canvas.width/2,screen.canvas.height/2 - mouse.y];
+        var i = 0
+        while(i<objectNames.length){
+            var p = proj3d(objectPos[i]);
+            var Dist2d = Math.sqrt(Math.pow(p[0]-m[0],2)+Math.pow(p[1]-m[1],2));
+            if(Dist2d < 20){
+                selectedBody = i;
+                camD = Math.sqrt(Math.pow(camV[0]-objectPos[i][0],2)+Math.pow(camV[1]-objectPos[i][1],2)+Math.pow(camV[2]-objectPos[i][2],2));
+                camY = -atan2(objectPos[i][0]-camV[0],objectPos[i][1]-camV[1]);
+                camP = atan2(Math.sqrt(Math.pow(camV[0]-objectPos[i][0],2)+Math.pow(camV[1]-objectPos[i][1],2)),objectPos[i][2]-camV[2],);
+                break;
+            }
+            i += 1;
+        }
+    }
     if(mouseOld.d){
         camP += -270*(mouse.y-mouseOld.y)/screen.canvas.height;
         camY += 270*(mouse.x-mouseOld.x)/screen.canvas.height;
@@ -293,17 +344,22 @@ function Render(){
     drawline3d([0,0,0],[0,1,0],-3);
     setColor("#ff0000");
     drawline3d([0,0,0],[1,0,0],-3);
-    var i = 0;
-    while(i<objectNames.length){
-        var orb = orbitalParams[i];
-        setColor(objectColor[i]);
-        if(orb.Parent == -1){
-            var parentpos = [0,0,0];
-        }else{
-            var parentpos = objectPos[orb.Parent];
+    if(drawOrbits){
+        var i = 0;
+        while(i<objectNames.length){
+            var orb = orbitalParams[i];
+            setColor(objectColor[i]);
+            if(orb.Parent == -1){
+                var parentpos = [0,0,0];
+            }else{
+                var parentpos = objectPos[orb.Parent];
+            }
+            var distance = Math.sqrt(Math.pow(objectPos[i][0]-camV[0],2)+Math.pow(objectPos[i][1]-camV[1],2)+Math.pow(objectPos[i][2]-camV[2],2));
+            if(0.1<camD/orb.a && camD/orb.a<20){
+                drawOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,parentpos,120,3);
+            }
+            i += 1;
         }
-        drawOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,parentpos,120,3);
-        i += 1;
     }
     var i = objectNames.length - 1;
     while(i>=0){
@@ -362,6 +418,7 @@ function mainLoop(){
     }
     T += TimeSpeed*dt;
     requestAnimationFrame(mainLoop);
+    UpdateOrbits();
     UpdateBodies();
     UpdateCamera();
     Render();
