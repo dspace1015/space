@@ -14,6 +14,17 @@ function leadingzeros(x,y){
     }
     return s;
 }
+function name2Id(x,y){
+    //returns location of element y in list x
+    var i = 0
+    while(i<x.length){
+        if(x[i]==y){
+            return i;
+        }
+        i+=1;
+    }
+    return -1;
+}
 function drawline(x0,y0,x1,y1,width){
     screen.lineWidth = width;
     screen.beginPath();
@@ -163,7 +174,7 @@ function drawText(text,screenpos,Align,font){
     screen.fillText(text,screenpos[0]+screen.canvas.width/2,screen.canvas.height/2-screenpos[1]);
     screen.setTransform(1,0,0,-1,screen.canvas.width/2,screen.canvas.height/2);
 }
-function orbit2xyz(a,e,i,L,w,v,vP){
+function orbit2xyz(a,e,i,L,w,v,vP,frame){
     //a-semimajoraxis,e-eccentricity,i-inclination,L-longitude of ascending node,w-arg of peri,v-true anomaly
     //vP is position of object orbit is centered around
     var v = [Math.cos(v*Math.PI/180)*a*(1-e*e)/(1+e*Math.cos(v*Math.PI/180)),Math.sin(v*Math.PI/180)*a*(1-e*e)/(1+e*Math.cos(v*Math.PI/180)),0]
@@ -171,6 +182,13 @@ function orbit2xyz(a,e,i,L,w,v,vP){
     v = Mvec(v,RotM("x",i));
     v = Mvec(v,RotM("z",L));
     v = addvec(v,vP);
+    if(frame == "Equitorial"){
+        v = Mvec(v,RotM("x",-23.43928));
+    }else if(frame =="Ecliptic"){
+        v = v;
+    }else if(frame instanceof Array){
+        v = Mvec(v,frame);
+    }
     return v;
 }
 function meanAnom2TrueAnom(e,M){
@@ -185,54 +203,54 @@ function meanAnom2TrueAnom(e,M){
     }
     return 360/Math.PI*Math.atan(Math.sqrt((1+e)/(1-e))*Math.tan(Math.PI/360*E));
 }
-function drawOrbit(a,e,i,L,w,vP,steps,width){
+function drawOrbit(a,e,i,L,w,vP,frame,steps,width){
     var ang = 0;
     while(ang<360){
-        p1 = orbit2xyz(a,e,i,L,w,ang,vP);
-        p2 = orbit2xyz(a,e,i,L,w,ang+360/steps,vP);
+        p1 = orbit2xyz(a,e,i,L,w,ang,vP,frame);
+        p2 = orbit2xyz(a,e,i,L,w,ang+360/steps,vP,frame);
         drawline3d(p1,p2,-width);
         ang += 360/steps;
     }
 }
-function addObjectOrbit(a,e,i,L,w,M0,t0,Parent,P){
+function addObjectOrbit(a,e,i,L,w,M0,t0,Parent,P,frame){
     var period = P;
     if(period == ""){
-        period = 2*Math.PI*Math.sqrt(Math.pow(a,3)/1.32712440018e20);
+        period = 2*Math.PI*Math.sqrt(Math.pow(a,3)/objectMass[Parent]);
     }
-    orbitalParams.push({Parent:Parent,a:a,e:e,i:i,L:L,w:w,M0:M0,t0:t0,P:period});
+    orbitalParams.push({Parent:Parent,a:a,e:e,i:i,L:L,w:w,M0:M0,t0:t0,P:period,frame:frame});
     objectPos.push([0,0,0]);
 }
-function updateOrbit(id,a0,da,e0,de,i0,di,L0,dL,w0,dw,M0,dM,t0){
-    var epoch = (T-t0);
-    orbitalParams[id].a = (a0 + da*epoch);
-    orbitalParams[id].e = e0 + de*epoch;
-    orbitalParams[id].i = i0 + di*epoch;
-    orbitalParams[id].L = L0 + dL*epoch;
-    orbitalParams[id].w = w0 + dw*epoch;
-    orbitalParams[id].M0 = M0;
-    orbitalParams[id].P = 360/dM;
-    orbitalParams[id].t0 = t0;
+function addObjectOrbitRate(da,de,di,dL,dw,dM){
+    orbitalRates.push({da:da,de:de,di:di,dL:dL,dw:dw});
+    if(dM != 0 && dM == dM){
+        orbitalParams[orbitalParams.length-1].P = 360/dM;
+    }
 }
-function addObject(name,R,color){
+function addObject(name,R,color,Mass){
     objectNames.push(name);
     objectRadii.push(R);
     objectColor.push(color);
+    objectMass.push(Mass);
 }
 function updateObjectId(id){
-    var orb = orbitalParams[id];
-    var v = meanAnom2TrueAnom(orb.e,orb.M0+360*(T-orb.t0)/orb.P);
-    if(orb.Parent == -1){
+    orb2 = getOrbitNow(id);
+    var v = meanAnom2TrueAnom(orb2.e,orb2.M0+360*(T-orb2.t0)/orb2.P);
+    if(orb2.Parent == -1){
         var parentpos = [0,0,0];
     }else{
-        var parentpos = objectPos[orb.Parent];
+        var parentpos = objectPos[orb2.Parent];
     }
-    objectPos[id] = orbit2xyz(orb.a,orb.e,orb.i,orb.L,orb.w,v,parentpos);
+    objectPos[id] = orbit2xyz(orb2.a,orb2.e,orb2.i,orb2.L,orb2.w,v,parentpos,orb2.frame);
 }
 var orbitalParams = [];
+var orbitalRates = [];
 var objectPos = []
 var objectNames = [];
 var objectRadii = [];
 var objectColor = [];
+var objectMass = [];
+var maxT = 253402300800;
+var minT = -156806496560;
 var currentT = 0.0;
 var T = 0.0;
 var TimeSpeed = 1;
@@ -260,17 +278,24 @@ window.onmousedown = function(e){mouse.d = true};
 window.ondrag = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
 window.onwheel = function(e){camD *= Math.exp(0.25*(e.deltaY/100))};
 
-function UpdateOrbits(){
-    var AU = 149.598e9;
-    var cenTosec = 36525*86400;
-    var yrTosec = 365.25*86400;
-    var J2000 = new Date(2000,0,1,12,0,0,0);
-    J2000 = J2000.getTime()/1000 - 60*(J2000.getTimezoneOffset());
+/*
     updateOrbit(1,1.00000261*AU,0.00000562*AU/cenTosec,0.01671123,-0.00004392/cenTosec,-0.00001531,-0.01294668/cenTosec,0.0,0.0/cenTosec,102.93768193,0.32327364/cenTosec,100.46457166-102.93768193,(35999.37244981-0.32327364)/cenTosec,J2000);
     updateOrbit(2,384400e3,3.8/cenTosec,0.0554,0,5.16,0,125.08,-360/(18.600*yrTosec),318.15,360/(5.997*yrTosec),135.27,360/(27.322*86400) - 360/(5.997*yrTosec) + 360/(18.600*yrTosec),J2000);
     updateOrbit(3,0.38709843*AU,0.00000000*AU/cenTosec,0.20563661,0.00002123/cenTosec,7.00559432,-0.00590158/cenTosec,48.33961819,-0.12534081/cenTosec,77.45771895-48.33961819,(0.16047689+0.12534081)/cenTosec,252.25166724-77.45771895,(149472.67486623-0.15940013)/cenTosec,J2000)
     updateOrbit(4,0.72333566*AU,0.00000390*AU/cenTosec,0.00677672,-0.00004107/cenTosec,3.39467605,-0.00078890/cenTosec,76.67984255,-0.27769418/cenTosec,131.60246718-76.67984255,(0.00268329+0.27769418)/cenTosec,181.97909950-131.60246718,(58517.81538729 - 0.00268329)/cenTosec,J2000);
     updateOrbit(5,1.52371034*AU,0.00001847*AU/cenTosec,0.09339410,0.00007882/cenTosec,1.84969142,-0.00813131/cenTosec,49.55953891,-0.29257343/cenTosec,-23.94362959 - 49.55953891,(0.44441088 + 0.29257343)/cenTosec,-4.55343205 + 23.94362959,(19140.30268499 -0.44441088)/cenTosec,J2000);
+*/
+function getOrbitNow(id){
+    var orb = {...orbitalParams[id]};
+    var orbR = orbitalRates[id];
+    if(typeof orbR != 'undefined'){
+        orb.a = orb.a + orbR.da*(T-orb.t0);
+        orb.e = orb.e + orbR.de*(T-orb.t0);
+        orb.i = orb.i + orbR.di*(T-orb.t0);
+        orb.L = orb.L + orbR.dL*(T-orb.t0);
+        orb.w = orb.w + orbR.dw*(T-orb.t0);
+    }
+    return orb;
 }
 function UpdateBodies(){
     var i = 0;
@@ -311,6 +336,14 @@ function UpdateCamera(){
         TimeSpeed = 1;
         T = currentT;
     }
+    if(T>maxT){
+        T = maxT;
+        TimeSpeed = 1;
+    }
+    if(T<minT){
+        T = minT;
+        TimeSpeed = -1;
+    }
     if(pressedKeys[83]){
         camD *= Math.exp(3*dt);
     }
@@ -338,16 +371,17 @@ function Render(){
     fillScreen("#ffffff");
     setColor("#404040");
     drawGrid(12,24,MtimesM([1e15,0,0,0,1e15,0,0,0,1e15],RotM("x",0)));
-    setColor("#0000ff");
-    drawline3d([0,0,0],[0,0,1],-3);
+    /*setColor("#0000ff");
+    drawline3d([0,0,0],[0,0,1e10],-3);
     setColor("#00ff00");
-    drawline3d([0,0,0],[0,1,0],-3);
+    drawline3d([0,0,0],[0,1e10,0],-3);
     setColor("#ff0000");
-    drawline3d([0,0,0],[1,0,0],-3);
+    drawline3d([0,0,0],[1e10,0,0],-3);
+    */
     if(drawOrbits){
         var i = 0;
         while(i<objectNames.length){
-            var orb = orbitalParams[i];
+            var orb = getOrbitNow(i);
             setColor(objectColor[i]);
             if(orb.Parent == -1){
                 var parentpos = [0,0,0];
@@ -355,8 +389,8 @@ function Render(){
                 var parentpos = objectPos[orb.Parent];
             }
             var distance = Math.sqrt(Math.pow(objectPos[i][0]-camV[0],2)+Math.pow(objectPos[i][1]-camV[1],2)+Math.pow(objectPos[i][2]-camV[2],2));
-            if(0.1<camD/orb.a && camD/orb.a<20){
-                drawOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,parentpos,120,3);
+            if(0.1<camD/orb.a && camD/orb.a<20 && orb.Parent != -1){
+                drawOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,parentpos,orb.frame,120,3);
             }
             i += 1;
         }
@@ -378,6 +412,12 @@ function Render(){
 function RenderUI(){
     var now = new Date(T*1000);
     var month = now.getMonth();
+    var timezone = -now.getTimezoneOffset()/60;
+    if(timezone>0){
+        timezone = "UTC+"+timezone;
+    }else{
+        timezone = "UTC"+timezone;
+    }
     if(month == 0){
         month = "Jan";
     }else if(month == 1){
@@ -404,9 +444,17 @@ function RenderUI(){
         month = "Dec";
     }
     setColor("#ffffff");
-    drawText(leadingzeros(now.getHours(),2)+":"+leadingzeros(now.getMinutes(),2)+":"+leadingzeros(now.getSeconds(),2)+" "+month+" "+now.getDate()+" "+now.getFullYear(),[-screen.canvas.width/2+5,screen.canvas.height/2-5],"left","24px courier")
+    drawText(leadingzeros(now.getHours(),2)+":"+leadingzeros(now.getMinutes(),2)+":"+leadingzeros(now.getSeconds(),2)+" "+month+" "+leadingzeros(now.getDate(),2)+" "+now.getFullYear()+" "+timezone,[-screen.canvas.width/2+5,screen.canvas.height/2-5],"left","24px courier")
     drawText(Math.round(TimeSpeed*100)/100+"x",[-screen.canvas.width/2+5,screen.canvas.height/2-5-24],"left","24px courier");
     drawText("Selected Object:\n"+objectNames[selectedBody],[screen.canvas.width/2-5,screen.canvas.height/2-5],"right","24px courier");
+    if(T>=maxT){
+        
+        drawText("MAXIMUM TIME REACHED",[0,-screen.canvas.height/2+100],"center","50px courier");
+    }
+    if(T<=minT){
+        
+        drawText("MINIMUM TIME REACHED",[0,-screen.canvas.height/2+100],"center","50px courier");
+    }
 }
 function mainLoop(){
     //time handling
@@ -418,7 +466,7 @@ function mainLoop(){
     }
     T += TimeSpeed*dt;
     requestAnimationFrame(mainLoop);
-    UpdateOrbits();
+    //UpdateOrbits();
     UpdateBodies();
     UpdateCamera();
     Render();
@@ -427,12 +475,47 @@ function mainLoop(){
 function initLoop(){
     currentT = new Date().getTime()/1000;
     Told = 0;
+    //T = 946684800;
     T = currentT;
     requestAnimationFrame(mainLoop);
 };
+
+fetch("Stars.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("Error fetching JSON"));
+fetch("Objects.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("Error fetching JSON"));
+
+function loadObjects(file){
+    var list = Object.entries(file);
+    var i = 0;
+    while(i<list.length){
+        var name = list[i][0];
+        var obj = list[i][1];
+        if(obj.Pos = obj.Pos){
+            var orb = {Parent:-1,frame:"Equitorial",a:obj.Pos.R,e:0,i:obj.Pos.DE,L:obj.Pos.RA-90,w:90,M0:0,t0:0,P:Infinity};
+        }else if(obj.orbit == obj.orbit){
+            var orb = obj.orbit;
+            orb.Parent = name2Id(objectNames,orb.Parent);
+        }else{
+           console.error("Object does not have position type: \n",obj);
+           var orb;
+        }
+        if(orb.t0 =="J2000"){
+            orb.t0 = 946728000;
+        }
+        addObject(name,obj.Params.Radius,obj.Params.Color,obj.Params.Mass);
+        addObjectOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,orb.M0,orb.t0,orb.Parent,orb.P,orb.frame);
+        var orbR = obj.orbitRate;
+        if(typeof orbR != 'undefined'){
+            addObjectOrbitRate(orbR.da,orbR.de,orbR.di,orbR.dL,orbR.dw,orbR.dM);
+        }else{
+            orbitalRates.push({da:0,de:0,di:0,dL:0,dw:0});
+        }
+        i += 1;
+    }
+}
 var AU = 149.598e9;
-var J2000 = 946684800;
-addObject("Sun",696e6,"#ffffaa");
+var J2000 = 946728000;
+/*
+addObject("Sun2",696e6,"#ffffaa",1.32712440018e20);
 addObjectOrbit(0,0,0,0,0,0,J2000,-1,Infinity);
 addObject("Earth",6378009,"#0080ff");
 addObjectOrbit(AU,0.01671123,-0.00001531,0.0,102.93768193,-2.47311027,J2000,0,"");
@@ -452,9 +535,5 @@ addObject("Uranus",25362e3,"#c6e7e7");
 addObjectOrbit(19.18916464*AU,0.04725744,0.77263783,74.01692503,96.93735127,142.28382821,J2000,0,"");
 addObject("Neptune",24622e3,"#b0d0e0");
 addObjectOrbit(30.06992276*AU,0.00859048,1.77004347,131.78422574,-86.81946347,-100.08479196,J2000,0,"");
-
-
-
-
-
+*/
 requestAnimationFrame(initLoop);
