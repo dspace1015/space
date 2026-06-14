@@ -107,6 +107,12 @@ function atan2(x,y){
         }
     }
 }
+function cos(x){
+    return Math.cos(Math.PI/180*x);
+}
+function sin(x){
+    return Math.sin(Math.PI/180*x);
+}
 function proj3d(v){
     //projects 3d point v to a point onscren
     var vrel = Mvec([v[0]-camV[0],v[1]-camV[1],v[2]-camV[2]],camM);
@@ -133,7 +139,45 @@ function drawline3d(v1,v2,width){
         drawline(p1[0],p1[1],p2[0],p2[1],w);
     }
 }
+function drawpolygon3d(vlist){
+    var i = 0;
+    var draw = true;
+    while(i<vlist.length){
+        if(depth3d(vlist[i])<=0){
+            draw == false;
+        }
+        i += 1;
+    }
+    if(draw){
+        screen.beginPath();
+        screen.moveTo(proj3d(vlist[0])[0],proj3d(vlist[0])[1]);
+        i = 0;
+        while(i<vlist.length){
+            screen.lineTo(proj3d(vlist[i])[0],proj3d(vlist[i])[1]);
+            i += 1;
+        }
+        screen.fill();
+    }
+}
 function drawsphere3d(v,r){
+    screen.fillStyle = screen.strokeStyle;
+    var U = 0;
+    var dphi = 10;
+    while(U<360){
+        var V = 0;
+        while(V<180){
+            var p1 = [v[0]+r*cos(U)*sin(V),v[1]+r*sin(U)*sin(V),v[2]+r*cos(V)];
+            var p2 = [v[0]+r*cos(U+dphi)*sin(V),v[1]+r*sin(U+dphi)*sin(V),v[2]+r*cos(V)];
+            var p3 = [v[0]+r*cos(U)*sin(V+dphi),v[1]+r*sin(U)*sin(V+dphi),v[2]+r*cos(V+dphi)];
+            var p4 = [v[0]+r*cos(U+dphi)*sin(V+dphi),v[1]+r*sin(U+dphi)*sin(V+dphi),v[2]+r*cos(V+dphi)];
+            if(depth3d(p1)>0 && depth3d(p2)>0 && depth3d(p3)>0 && depth3d(p4)>0)
+            drawpolygon3d([p1,p3,p4,p2]);
+            V += dphi;
+        }
+        U+=dphi;
+    }
+}
+function drawdot3d(v,r){
     if(depth3d(v)>0){
         var p = proj3d(v);
         if(r>0){
@@ -181,7 +225,6 @@ function orbit2xyz(a,e,i,L,w,v,vP,frame){
     v = Mvec(v,RotM("z",w));
     v = Mvec(v,RotM("x",i));
     v = Mvec(v,RotM("z",L));
-    v = addvec(v,vP);
     if(frame == "Equitorial"){
         v = Mvec(v,RotM("x",-23.43928));
     }else if(frame =="Ecliptic"){
@@ -189,6 +232,7 @@ function orbit2xyz(a,e,i,L,w,v,vP,frame){
     }else if(frame instanceof Array){
         v = Mvec(v,frame);
     }
+    v = addvec(v,vP);
     return v;
 }
 function meanAnom2TrueAnom(e,M){
@@ -277,14 +321,6 @@ window.onmouseup = function(e){mouse.d = false};
 window.onmousedown = function(e){mouse.d = true};
 window.ondrag = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
 window.onwheel = function(e){camD *= Math.exp(0.25*(e.deltaY/100))};
-
-/*
-    updateOrbit(1,1.00000261*AU,0.00000562*AU/cenTosec,0.01671123,-0.00004392/cenTosec,-0.00001531,-0.01294668/cenTosec,0.0,0.0/cenTosec,102.93768193,0.32327364/cenTosec,100.46457166-102.93768193,(35999.37244981-0.32327364)/cenTosec,J2000);
-    updateOrbit(2,384400e3,3.8/cenTosec,0.0554,0,5.16,0,125.08,-360/(18.600*yrTosec),318.15,360/(5.997*yrTosec),135.27,360/(27.322*86400) - 360/(5.997*yrTosec) + 360/(18.600*yrTosec),J2000);
-    updateOrbit(3,0.38709843*AU,0.00000000*AU/cenTosec,0.20563661,0.00002123/cenTosec,7.00559432,-0.00590158/cenTosec,48.33961819,-0.12534081/cenTosec,77.45771895-48.33961819,(0.16047689+0.12534081)/cenTosec,252.25166724-77.45771895,(149472.67486623-0.15940013)/cenTosec,J2000)
-    updateOrbit(4,0.72333566*AU,0.00000390*AU/cenTosec,0.00677672,-0.00004107/cenTosec,3.39467605,-0.00078890/cenTosec,76.67984255,-0.27769418/cenTosec,131.60246718-76.67984255,(0.00268329+0.27769418)/cenTosec,181.97909950-131.60246718,(58517.81538729 - 0.00268329)/cenTosec,J2000);
-    updateOrbit(5,1.52371034*AU,0.00001847*AU/cenTosec,0.09339410,0.00007882/cenTosec,1.84969142,-0.00813131/cenTosec,49.55953891,-0.29257343/cenTosec,-23.94362959 - 49.55953891,(0.44441088 + 0.29257343)/cenTosec,-4.55343205 + 23.94362959,(19140.30268499 -0.44441088)/cenTosec,J2000);
-*/
 function getOrbitNow(id){
     var orb = {...orbitalParams[id]};
     var orbR = orbitalRates[id];
@@ -323,8 +359,8 @@ function UpdateCamera(){
         }
     }
     if(mouseOld.d){
-        camP += -270*(mouse.y-mouseOld.y)/screen.canvas.height;
-        camY += 270*(mouse.x-mouseOld.x)/screen.canvas.height;
+        camP += -3*camFOV*(mouse.y-mouseOld.y)/screen.canvas.height;
+        camY += 3*camFOV*(mouse.x-mouseOld.x)/screen.canvas.height;
     }
     if(pressedKeys[190]){
         TimeSpeed *= Math.exp(3*dt);
@@ -357,6 +393,7 @@ function UpdateCamera(){
         camP = -90;
     }
     camM = [1,0,0,0,1,0,0,0,1];
+    camM = MtimesM(camM,RotM("x",23.43928*0));
     camM = MtimesM(camM,RotM("z",camY));
     camM = MtimesM(camM,RotM("y",camP));
     camV = [-camD*camM[0],-camD*camM[3],-camD*camM[6]];
@@ -378,6 +415,26 @@ function Render(){
     setColor("#ff0000");
     drawline3d([0,0,0],[1e10,0,0],-3);
     */
+    var i = 0;
+    while(i<objectNames.length){
+        setColor(objectColor[i]);
+        if(depth3d(objectPos[i])/objectRadii[i] < 50){
+            drawsphere3d(objectPos[i],objectRadii[i]);
+        }else{
+            drawdot3d(objectPos[i],objectRadii[i]);
+        }
+        drawdot3d(objectPos[i],-1);
+        var p = proj3d(objectPos[i]);
+        p[1] -= 0.5*objectRadii[i]/depth3d(objectPos[i])*screen.canvas.height/Math.tan(camFOV*Math.PI/360) + 5;
+        var scale = depth3d(objectPos[i])/orbitalParams[i].a;
+        if(orbitalParams[i].Parent == -1){
+            scale = 0;
+        }
+        if(depth3d(objectPos[i])>0 && scale<20){
+            drawText(objectNames[i],p,"center","12px arial")
+        }
+        i += 1;
+    }
     if(drawOrbits){
         var i = 0;
         while(i<objectNames.length){
@@ -394,18 +451,6 @@ function Render(){
             }
             i += 1;
         }
-    }
-    var i = objectNames.length - 1;
-    while(i>=0){
-        setColor(objectColor[i]);
-        drawsphere3d(objectPos[i],objectRadii[i]);
-        drawsphere3d(objectPos[i],-1);
-        var p = proj3d(objectPos[i]);
-        p[1] -= 0.5*objectRadii[i]/depth3d(objectPos[i])*screen.canvas.height/Math.tan(camFOV*Math.PI/360);
-        if(depth3d(objectPos[i])>0){
-            drawText(objectNames[i],p,"center","12px arial")
-        }
-        i -= 1;
     }
     RenderUI();
 }
@@ -480,8 +525,9 @@ function initLoop(){
     requestAnimationFrame(mainLoop);
 };
 
-fetch("Stars.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("Error fetching JSON"));
-fetch("Objects.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("Error fetching JSON"));
+fetch("Stars.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("Error loading object file"));
+fetch("Objects.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("Error loading object file"));
+fetch("Craft.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("Error loading object file"));
 
 function loadObjects(file){
     var list = Object.entries(file);
@@ -489,11 +535,28 @@ function loadObjects(file){
     while(i<list.length){
         var name = list[i][0];
         var obj = list[i][1];
-        if(obj.Pos = obj.Pos){
+        if(typeof obj.Pos != 'undefined'){
             var orb = {Parent:-1,frame:"Equitorial",a:obj.Pos.R,e:0,i:obj.Pos.DE,L:obj.Pos.RA-90,w:90,M0:0,t0:0,P:Infinity};
-        }else if(obj.orbit == obj.orbit){
+        }else if(typeof obj.orbit != 'undefined'){
             var orb = obj.orbit;
             orb.Parent = name2Id(objectNames,orb.Parent);
+            var orbR = obj.orbitRate;
+        }else if(typeof obj.tle != 'undefined'){
+            var orb = {Parent:1,frame:"Equitorial",a:0,e:0,i:0,L:0,w:0,M0:0,t0:0,P:Infinity}
+            var orbR = {da:0,de:0,di:0,dL:0,dw:0,dM:0};
+            var tle = obj.tle;
+            var t0 = parseFloat(tle.substring(18,20));
+            t0 = Math.floor(((t0+3)/4)+Math.floor(365*t0))+parseFloat(tle.substring(20,32)) - 1;
+            t0 = 86400*t0 + 946728000 - 12*3600;
+            orb.t0 = t0;
+            orb.i = parseFloat(tle.substring(8+69,16+69));
+            orb.e = parseFloat("0."+tle.substring(27+69,33+69));
+            orb.L = parseFloat(tle.substring(17+69,25+69));
+            orb.w = parseFloat(tle.substring(34+69,42+69));
+            orb.M0 = parseFloat(tle.substring(43+69,51+69));
+            orb.P = 86400/parseFloat(tle.substring(52+69,63+69));
+            orb.a = Math.pow(objectMass[orb.Parent]*Math.pow(orb.P/(2*Math.PI),2),1/3);
+            orbR.dL = 180/Math.PI*(-1.5*(Math.pow(objectRadii[orb.Parent],2)/Math.pow(orb.a*(1-orb.e*orb.e),2))*(1.08262668e-3*Math.sqrt(objectMass[orb.Parent]/Math.pow(orb.a,3)))*cos(orb.i));
         }else{
            console.error("Object does not have position type: \n",obj);
            var orb;
@@ -503,7 +566,6 @@ function loadObjects(file){
         }
         addObject(name,obj.Params.Radius,obj.Params.Color,obj.Params.Mass);
         addObjectOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,orb.M0,orb.t0,orb.Parent,orb.P,orb.frame);
-        var orbR = obj.orbitRate;
         if(typeof orbR != 'undefined'){
             addObjectOrbitRate(orbR.da,orbR.de,orbR.di,orbR.dL,orbR.dw,orbR.dM);
         }else{
