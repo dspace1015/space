@@ -209,7 +209,6 @@ function drawsphere3d(v,r,M){
         }
         U += dphi;
     }
-    console.log("yes");
 }
 function drawdot3d(v,r){
     if(depth3d(v)>0){
