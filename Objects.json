@@ -1,4 +1,20 @@
-{
+{"Sun":{
+    "Pos":{
+        "RA": 0.0, 
+        "DE": 90.0, 
+        "R": 0.0 
+    },
+    "PosRate":{
+        "dRA": 0.0, 
+        "dDE": 0.0, 
+        "dR": 0.0
+    },
+    "Params":{
+        "Radius": 696e6,
+        "Color": "#ffffaa",
+        "Mass": 1.32712440018e20
+    }
+},
 "Earth":{
     "orbit":{
         "Parent":"Sun",
@@ -24,6 +40,12 @@
         "Radius": 6378009,
         "Color": "#0080ff",
         "Mass": 3.9860044188e14
+    },
+    "Rotation":{
+        "AxisRA": 0,
+        "AxisDE": 90,
+        "Period": 86164.0996642,
+        "Long0": 280.46061837
     }
 },
 "Moon":{
