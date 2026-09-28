@@ -13,6 +13,12 @@
         "Radius": 696e6,
         "Color": "#ffffaa",
         "Mass": 1.32712440018e20
+    },
+    "Rotation":{
+        "AxisRA": 286.13,
+        "AxisDE": 63.87,
+        "Period": 2164320,
+        "Long0": 0
     }
 },
 "Earth":{
@@ -73,6 +79,12 @@
         "Radius": 1738100,
         "Color": "#808080",
         "Mass": 4.902800118e12
+    },
+    "Rotation":{
+        "AxisRA": 266.86,
+        "AxisDE": 65.64,
+        "Period": 2360591.5104,
+        "Long0": 30
     }
 },
 "Mercury":{
@@ -100,6 +112,12 @@
         "Radius": 2439.7e3,
         "Color": "#a0a0a0",
         "Mass": 2.2031870799860e13
+    },
+    "Rotation":{
+        "AxisRA": 281.010,
+        "AxisDE": 61.414,
+        "Period": 5067360,
+        "Long0": 0
     }
 },
 "Venus":{
@@ -127,6 +145,12 @@
         "Radius": 6052e3,
         "Color": "#ffffee",
         "Mass": 3.248585926e14
+    },
+    "Rotation":{
+        "AxisRA": 272.76,
+        "AxisDE": 67.16,
+        "Period": -10087200,
+        "Long0": 0
     }
 },
 "Mars":{
@@ -154,6 +178,12 @@
         "Radius": 3389.5e3,
         "Color": "#a08040",
         "Mass": 4.2828372e13
+    },
+    "Rotation":{
+        "AxisRA": 317.681,
+        "AxisDE": 52.887,
+        "Period": 88642.44,
+        "Long0": 0
     }
 },
 "Jupiter":{
@@ -181,6 +211,12 @@
         "Radius": 69911e3,
         "Color": "#ffa080",
         "Mass": 1.266865349e17
+    },
+    "Rotation":{
+        "AxisRA": 268.057,
+        "AxisDE": 64.495,
+        "Period": 35730,
+        "Long0": 0
     }
 },
 "Saturn":{
@@ -206,8 +242,14 @@
     },
     "Params":{
         "Radius": 58232e3,
-        "Color": "#ffffa0",
+        "Color": "#e0e0a0",
         "Mass": 2.2031870799860e13
+    },
+    "Rotation":{
+        "AxisRA": 40.589,
+        "AxisDE": 83.537,
+        "Period": 38361.6,
+        "Long0": 0
     }
 },
 "Uranus":{
@@ -235,6 +277,12 @@
         "Radius": 25362e3,
         "Color": "#c6e7e7",
         "Mass": 5.7939399e15
+    },
+    "Rotation":{
+        "AxisRA": 257.311,
+        "AxisDE": -15.175,
+        "Period": 62064,
+        "Long0": 0
     }
 },
 "Neptune":{
@@ -262,6 +310,12 @@
         "Radius": 24622e3,
         "Color": "#b0d0e0",
         "Mass": 6.8365299e15
+    },
+    "Rotation":{
+        "AxisRA": 299.36,
+        "AxisDE": 43.46,
+        "Period": 57996,
+        "Long0": 0
     }
 }
 }
