@@ -29,6 +29,7 @@ var lightTtime = false;
 var camFrame = 0;
 var UIscale = 1.0;
 var Menu = 0;
+var halt = false;
 
 var camFOV = 70;
 var defaultFOV = 70;
@@ -1326,6 +1327,15 @@ function RenderUI(){
     drawText("FPS:"+String(Math.round(1/dt)),[-screen.canvas.width/2+5,-screen.canvas.height/2+100],"left",String(Math.round(12*UIscale))+"px courier");
 }
 function mainLoop(){
+    if((objectNames[0]!="Sun" || objectNames[1]!="Earth")&& !halt){
+        mainCanvas.width = 5;
+        mainCanvas.height = 5;
+        fillScreen("#ffffff");
+        alert("error loading objects, please refresh the page");
+        
+        document.getElementById("body").innerHTML = "Refresh the Page";
+        halt = true;
+    }else{
     //time handling
     Told = currentT;
     currentT = new Date().getTime()/1000;
@@ -1334,7 +1344,9 @@ function mainLoop(){
         dt = 0;
     }
     T += TimeSpeed*dt;
-    requestAnimationFrame(mainLoop);
+    if(!halt){
+        requestAnimationFrame(mainLoop);
+    }
     resizeWindow();
     UpdateBodies();
     UpdateCamera();
@@ -1349,8 +1361,6 @@ function mainLoop(){
         i += 1;
     }   
     Render();
-    if(objectNames[0]!="Sun" || objectNames[1]!="Earth"){
-        alert("error loading objects, please refresh the page");
     }
 }
 
