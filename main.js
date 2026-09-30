@@ -1331,9 +1331,8 @@ function mainLoop(){
         mainCanvas.width = 5;
         mainCanvas.height = 5;
         fillScreen("#ffffff");
-        alert("error loading objects, please refresh the page");
-        
-        document.getElementById("body").innerHTML = "Refresh the Page";
+        alert("error loading objects, try refresh the page");
+        console.log("error");
         halt = true;
     }else{
     //time handling
@@ -1372,6 +1371,12 @@ function initLoop(){
 };
 
 fetch("Objects.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => alert("an error occured, please refresh page (bad data)1"));
+var currentT = new Date().getTime()/1000;
+Told = currentT
+//Wait 0.5 seconds for main file to load
+while(currentT-Told<0.5){
+    currentT = new Date().getTime()/1000;
+}
 fetch("MajorMoons.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => alert("an error occured, please refresh page (bad data)2"));
 fetch("Craft.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => alert("an error occured, please refresh page (bad data)3"));
 fetch("Stars.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => alert("an error occured, please refresh page (bad data)4"));
