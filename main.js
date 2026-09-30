@@ -502,49 +502,6 @@ function addObjectOrbitRate(da,de,di,dL,dw,dM){
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //Add draw objects:
 
 function appendLine(p1,p2,w,col,priority){
@@ -811,12 +768,10 @@ function UpdateScene(){
             setColor(objectColor[i]);
             if(orb.Parent == -1){
                 var parentpos = [0,0,0];
-            }else{
+            }else if(0.1<camD/orb.a && camD/orb.a<50){
                 var parentpos = objectPos[orb.Parent];
                 var distance = Math.sqrt(Math.pow(objectPos[i][0]-camV[0],2)+Math.pow(objectPos[i][1]-camV[1],2)+Math.pow(objectPos[i][2]-camV[2],2));
-                if(0.1<camD/orb.a && camD/orb.a<50){
-                    drawOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,parentpos,orb.frame,60,1,objectColor[i]);
-                }
+                drawOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,parentpos,orb.frame,60,1,objectColor[i]);
             }
             i += 1;
         }
@@ -876,33 +831,32 @@ window.onkeydown = function(e) {
         TimeSpeed *= -1
     };
     if(e.keyCode == 190){
-        if(Math.abs(TimeSpeed)<1e10){
-            if(Math.abs(TimeSpeed)>1){
-                if(((Math.abs(TimeSpeed))/(Math.pow(10,Math.floor(Math.log10(Math.abs(TimeSpeed))+1e-10)))) == 1){
-                    TimeSpeed *= 2.5;
-                }else{
-                    TimeSpeed *= 2;
-                }
-            }else if(Math.abs(TimeSpeed) == 1){
-                TimeSpeed = 2.5 * TimeSpeed/Math.abs(TimeSpeed);
+        if(Math.abs(TimeSpeed)>1){
+            if(((Math.abs(TimeSpeed))/(Math.pow(10,Math.floor(Math.log10(Math.abs(TimeSpeed))+1e-10)))) == 1){
+                TimeSpeed *= 2.5;
             }else{
-                TimeSpeed = 1;
+                TimeSpeed *= 2;
             }
+        }else if(Math.abs(TimeSpeed) == 1){
+            TimeSpeed = 2.5 * TimeSpeed/Math.abs(TimeSpeed);
+        }else{
+            TimeSpeed = 1;
+        }
+        if(Math.abs(TimeSpeed)>1e10){
+           TimeSpeed = TimeSpeed/Math.abs(TimeSpeed)*1e10;
         }
     };
     if(e.keyCode == 188){
-        if(Math.abs(TimeSpeed)>1){
-            if(Math.abs(TimeSpeed)>1){
-                if(((Math.abs(TimeSpeed))/(Math.pow(10,Math.floor(Math.log10(Math.abs(TimeSpeed))+1e-10)))) == 2.5){
-                    TimeSpeed /= 2.5;
-                }else{
-                    TimeSpeed /= 2;
-                }
-            }else if(Math.abs(TimeSpeed) == 1){
-                TimeSpeed = TimeSpeed/Math.abs(TimeSpeed);
-            }
-        }else{
+        if(Math.abs(TimeSpeed)<=1){
             TimeSpeed = 0;
+        }else if(Math.abs(TimeSpeed)>1){
+            if(((Math.abs(TimeSpeed))/(Math.pow(10,Math.floor(Math.log10(Math.abs(TimeSpeed))+1e-10)))) == 2.5){
+                TimeSpeed /= 2.5;
+            }else{
+                TimeSpeed /= 2;
+            }
+        }else if(Math.abs(TimeSpeed) == 1){
+            TimeSpeed = TimeSpeed/Math.abs(TimeSpeed);
         }
     }
     if(e.keyCode == 82){
@@ -919,13 +873,13 @@ function UpdateCamera(){
 
     if(mouseOld.d && !mouse.d && !mouseDrag.d && (x - 50*UIscale < mouseOld.x && mouseOld.x < x) && ( y - 50*UIscale < mouseOld.y && mouseOld.y < y)){
         Menu = 1-Menu;
-    }else if(mouseOld.d && mouse.d && !mouseDrag.d && (x - 105*UIscale < mouse.x && mouse.x < x -55*UIscale) && ( y - 50*UIscale<mouse.y<y)){
+    }else if(mouseOld.d && mouse.d && !mouseDrag.d && (x - 105*UIscale < mouse.x && mouse.x < x -55*UIscale) && ( y - 50*UIscale<mouse.y & mouse.y < y)){
         if(currentBody != -1){
             camD *= Math.exp(-3*dt);
         }else{
             camFOV *= Math.exp(-3*dt);
         }
-    }else if(mouseOld.d && mouse.d && !mouseDrag.d && (x - 160*UIscale < mouse.x && mouse.x < x -105*UIscale) && ( y - 50*UIscale<mouse.y<y)){
+    }else if(mouseOld.d && mouse.d && !mouseDrag.d && (x - 160*UIscale < mouse.x && mouse.x < x -105*UIscale) && ( y - 50*UIscale<mouse.y & mouse.y < y)){
         if(currentBody != -1){
             camD *= Math.exp(3*dt);
         }else{
@@ -938,25 +892,26 @@ function UpdateCamera(){
     }else if(mouseOld.d && !mouse.d && !mouseDrag.d){
         var m = [mouse.x-window.innerWidth/2,window.innerHeight/2 - mouse.y];
         var i = 0
-        var hit = 0;
+        var hit = -1;
         while(i<objectNames.length){
             var p = proj3d(objectPos[i]);
             var d =depth3d(objectPos[i]);
             var Dist2d = Math.sqrt(Math.pow(p[0]-m[0],2)+Math.pow(p[1]-m[1],2));
             if((Dist2d < 20 || Dist2d<0.5*objectRadii[i]/d*screen.canvas.height/Math.tan(camFOV*Math.PI/360)) && d>0){
-                if(selectedBody == i){
-                    currentBody = i;
-                }else{
-                    selectedBody = i;
-                }
-                hit = 1;
+                hit = i;
                 break;
             }
 
             i += 1;
         }
-        if(hit == 0){
+        if(hit == -1){
             selectedBody = -1;
+        }else{
+            if(selectedBody == hit){
+                currentBody = hit;
+            }else{
+                selectedBody = hit;
+            }
         }
         
     }
@@ -1124,15 +1079,14 @@ function Render(){
         }else if(type == "text"){
             setColor(draw[i][4]);
             var d = depth3d(vert[draw[i][1]]);
-            if(d>0){
-                var p = proj3d(vert[draw[i][1]]);
-                setColor(draw[i][4]);
-                if(draw[i][2]<0){
-                    drawText(draw[i][3],p,"center",Math.round(-draw[i][2])+"px courier");
-                }else{
-                    var s = 0.5*draw[i][2]/d*screen.canvas.height/Math.tan(camFOV*Math.PI/360);
-                    drawText(draw[i][3],p,"center",Math.round(s)+"px courier");
-                }
+            var p = proj3d(vert[draw[i][1]]);
+            if(d>0 && draw[i][2]<0){
+                drawText(draw[i][3],p,"center",Math.round(-draw[i][2])+"px courier");
+            }
+            if(d>0 && !(draw[i][2]<0)){
+                var s = 0.5*draw[i][2]/d*screen.canvas.height/Math.tan(camFOV*Math.PI/360);
+                drawText(draw[i][3],p,"center",Math.round(s)+"px courier");
+                
             }
         }else if(type == "surf"){
             var j = 0;
@@ -1360,26 +1314,24 @@ function mainLoop(){
     }
 }
 
-function initLoop(){
-    currentT = new Date().getTime()/1000;
-    Told = 0;
-    T = currentT;
-    requestAnimationFrame(mainLoop);
-};
 
-fetch("Objects.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => alert("an error occured, please refresh page (bad data)1"));
-var currentT = new Date().getTime()/1000;
+const f1 = fetch("Objects.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("sorry file1 failed to load, please refresh page"));
+
+
+//Wait 0.5 seconds for main file to load before loading others
+
+currentT = new Date().getTime()/1000;
 Told = currentT
-//Wait 0.5 seconds for main file to load
 while(currentT-Told<0.5){
     currentT = new Date().getTime()/1000;
 }
-fetch("MajorMoons.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => alert("an error occured, please refresh page (bad data)2"));
-fetch("Craft.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => alert("an error occured, please refresh page (bad data)3"));
-fetch("Stars.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => alert("an error occured, please refresh page (bad data)4"));
 
-const EarthTex = new Image();
-EarthTex.src = "Textures/EarthTrueColor.png"
+
+const f2 = fetch("MajorMoons.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("sorry file2 failed to load, please refresh page"));
+const f3 = fetch("Craft.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("sorry file3 failed to load, please refresh page"));
+const f4 = fetch("Stars.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("sorry file4 failed to load, please refresh page"));
+
+
 
 function loadObjects(file){
     var list = Object.entries(file);
@@ -1451,10 +1403,13 @@ function loadObjects(file){
     }
 }
 
-//waits till other objects are loaded.
+//waits till other objects are loaded to start the things
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Loaded");
-  requestAnimationFrame(initLoop);
+    console.log("Loaded");
+    currentT = new Date().getTime()/1000;
+    Told = 0;
+    T = currentT;
+    requestAnimationFrame(mainLoop);
 });
 
 
