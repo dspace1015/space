@@ -68,9 +68,6 @@ var drawOrder = [];
 const mainCanvas = document.getElementById("MainCanvas");
 const screen = mainCanvas.getContext("2d");
 
-if(screen === null){
-    alert("WebGL could not initialize, try restart your browser");
-}
 
 //Functions ______________________________________________________________
 function resizeWindow(){
