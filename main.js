@@ -25,7 +25,7 @@ var lat = 0.0;
 var drawOrbits = true;
 var drawNames = true;
 var tracking = false;
-var lightTtime = true;
+var lightTtime = false;
 var camFrame = 0;
 var UIscale = 1.0;
 var Menu = 0;
@@ -747,6 +747,9 @@ function updateObjectId(id){
     objectPos[id] = orbit2xyz(orb2.a,orb2.e,orb2.i,orb2.L,orb2.w,v,parentpos,orb2.frame);
     if(lightTtime){
         var D = Math.abs(depth3d(objectPos[id]));
+        if(id==CurrentBody){
+            D = camD;
+        }
         orb2 = getOrbitNow(id,T-D/c); 
         v = meanAnom2TrueAnom(orb2.e,orb2.M0+360*(T-D/c-orb2.t0)/orb2.P);
         objectPos[id] = orbit2xyz(orb2.a,orb2.e,orb2.i,orb2.L,orb2.w,v,parentpos,orb2.frame);
