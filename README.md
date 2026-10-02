@@ -7,9 +7,9 @@ A planetarium like web app that displays different objects live in the night sky
 
 
  - Live Planet Positions plus moons
- - Location select
+ - Select any location on the planet and view its local sky
  - Track the International Space Station
- - change camera angle to math a planet's axis
+ - change camera angle to match a planet's axis
  - Predict eclipses by lining up the Earth sun and Moon with the time controls
 
 CONTROLS:
