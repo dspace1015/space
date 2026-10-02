@@ -25,7 +25,7 @@ var lat = 0.0;
 var drawOrbits = true;
 var drawNames = true;
 var tracking = false;
-var lightTtime = false;
+var lightTtime = true;
 var camFrame = 0;
 var UIscale = 1.0;
 var Menu = 0;
@@ -702,7 +702,7 @@ function updateObjectId(id){
     objectPos[id] = orbit2xyz(orb2.a,orb2.e,orb2.i,orb2.L,orb2.w,v,parentpos,orb2.frame);
     if(lightTtime){
         var D = Math.abs(depth3d(objectPos[id]));
-        if(id==CurrentBody){
+        if(id == currentBody){
             D = camD;
         }
         orb2 = getOrbitNow(id,T-D/c); 
@@ -1274,6 +1274,28 @@ function RenderUI(){
         
         drawText("MINIMUM TIME REACHED",[0,-screen.canvas.height/2+100],"center",String(Math.round(50*UIscale))+"px courier");
     }
+    setColor("#ffffff");
+    drawText("View Controls?",[-100*UIscale,screen.canvas.height/2 - 24*UIscale],"left",String(Math.round(24*UIscale))+"px courier");
+    if((-400*UIscale<mouse.x-screen.canvas.width/2)&&(mouse.x-screen.canvas.width/2<400*UIscale) && (mouse.y<100*UIscale)){
+        drawText("Click on object - select",[-100*UIscale,screen.canvas.height/2 - (2*24+18*2)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
+        drawText("Click on selected object - switch to",[-100*UIscale,screen.canvas.height/2 - (2*24+18*3)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
+        drawText("< slow down time",[-100*UIscale,screen.canvas.height/2 - (2*24+18*4)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
+        drawText("> speed up time",[-100*UIscale,screen.canvas.height/2 - (2*24+18*5)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
+        drawText("/ reverse time",[-100*UIscale,screen.canvas.height/2 - (2*24+18*6)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
+        drawText("(r) set to current time(now)",[-100*UIscale,screen.canvas.height/2 - (2*24+18*7)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
+        drawText("(c) change camera",[-100*UIscale,screen.canvas.height/2 - (2*24+18*8)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
+        drawText("(o) toggle orbits",[-100*UIscale,screen.canvas.height/2 - (2*24+18*9)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
+        drawText("(n) toggle names",[-100*UIscale,screen.canvas.height/2 - (2*24+18*10)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
+        drawText("(t) track selected object",[-100*UIscale,screen.canvas.height/2 - (2*24+18*11)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
+        drawText("Mouse scroll and drag to move camera",[-200*UIscale,screen.canvas.height/2 - (2*24)*UIscale],"left",String(Math.round(24*UIscale))+"px courier");
+    }
+    var d = "lightTraveltime: ";
+    if(lightTtime){
+        d = d + "ON";
+    }else{
+        d = d + "OFF";
+    }
+    drawText(d,[-0,-screen.canvas.height/2 + (2*24)*UIscale],"center",String(Math.round(18*UIscale))+"px courier");
     setColor("#ffffff");
     drawText("FPS:"+String(Math.round(1/dt)),[-screen.canvas.width/2+5,-screen.canvas.height/2+100],"left",String(Math.round(12*UIscale))+"px courier");
 }
