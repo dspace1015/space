@@ -1,4 +1,5 @@
 {"Sun":{
+    "Type":"Star",
     "Pos":{
         "RA": 0.0, 
         "DE": 90.0, 
@@ -22,6 +23,7 @@
     }
 },
 "Earth":{
+    "Type":"Planet",
     "orbit":{
         "Parent":"Sun",
         "frame":"Ecliptic",
@@ -55,6 +57,7 @@
     }
 },
 "Moon":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Earth",
         "frame":"Ecliptic",
@@ -88,6 +91,7 @@
     }
 },
 "Mercury":{
+    "Type":"Planet",
     "orbit":{
         "Parent":"Sun",
         "frame":"Ecliptic",
@@ -121,6 +125,7 @@
     }
 },
 "Venus":{
+    "Type":"Planet",
     "orbit":{
         "Parent":"Sun",
         "frame":"Ecliptic",
@@ -154,6 +159,7 @@
     }
 },
 "Mars":{
+    "Type":"Planet",
     "orbit":{
         "Parent":"Sun",
         "frame":"Ecliptic",
@@ -187,6 +193,7 @@
     }
 },
 "Jupiter":{
+    "Type":"Planet",
     "orbit":{
         "Parent":"Sun",
         "frame":"Ecliptic",
@@ -220,6 +227,7 @@
     }
 },
 "Saturn":{
+    "Type":"Planet",
     "orbit":{
         "Parent":"Sun",
         "frame":"Ecliptic",
@@ -243,7 +251,7 @@
     "Params":{
         "Radius": 58232e3,
         "Color": "#e0e0a0",
-        "Mass": 2.2031870799860e13
+        "Mass": 3.79311879e16
     },
     "Rotation":{
         "AxisRA": 40.589,
@@ -253,6 +261,7 @@
     }
 },
 "Uranus":{
+    "Type":"Planet",
     "orbit":{
         "Parent":"Sun",
         "frame":"Ecliptic",
@@ -286,6 +295,7 @@
     }
 },
 "Neptune":{
+    "Type":"Planet",
     "orbit":{
         "Parent":"Sun",
         "frame":"Ecliptic",

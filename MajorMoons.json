@@ -1,5 +1,6 @@
 {
 "Phobos":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Mars",
         "frame":[317.7,52.9],
@@ -33,6 +34,7 @@
     }
 },
 "Deimos":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Mars",
         "frame":[316.6,53.5],
@@ -66,6 +68,7 @@
     }
 },
 "Io":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Jupiter",
         "frame":[268.1,64.5	],
@@ -99,6 +102,7 @@
     }
 },
 "Europa":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Jupiter",
         "frame":[268.1,64.5	],
@@ -132,6 +136,7 @@
     }
 },
 "Ganymede":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Jupiter",
         "frame":[268.2,64.6	],
@@ -165,6 +170,7 @@
     }
 },
 "Callisto":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Jupiter",
         "frame":[268.7,64.8],
@@ -200,6 +206,7 @@
 
 
 "Mimas":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Saturn",
         "frame":[40.6,83.5],
@@ -221,18 +228,19 @@
         "dM": 0.00438652332322
     },
     "Params":{
-        "Radius": 197000,
-        "Color": "#a0c0a0",
-        "Mass": 2.5295602685e9
+        "Radius": 197490,
+        "Color": "#959595",
+        "Mass": 2.5034904468e9
     },
     "Rotation":{
-        "AxisRA": 268.72,
-        "AxisDE": 64.83,
-        "Period": 1442054.016,
+        "AxisRA": 40.6,
+        "AxisDE": 83.5,
+        "Period": 81425.2608001,
         "Long0":0
     }
 },
 "Enceladus":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Saturn",
         "frame":[40.6,83.5],
@@ -254,18 +262,19 @@
         "dM": 0.00303696654377
     },
     "Params":{
-        "Radius": 251000,
-        "Color": "#a0c0a0",
-        "Mass": 7.20824562e9
+        "Radius": 252040,
+        "Color": "#a0a0b8",
+        "Mass": 7.2103680479e9
     },
     "Rotation":{
-        "AxisRA": 268.72,
-        "AxisDE": 64.83,
-        "Period": 1442054.016,
+        "AxisRA": 40.6,
+        "AxisDE": 83.5,
+        "Period": 118386.8352,
         "Long0":0
     }
 },
 "Tethys":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Saturn",
         "frame":[40.6,83.5],
@@ -287,18 +296,19 @@
         "dM": -0.0000766797337768
     },
     "Params":{
-        "Radius": 528000,
-        "Color": "#a0c0a0",
-        "Mass": 4.124718327e10
+        "Radius": 531000,
+        "Color": "#a0a0a0",
+        "Mass": 4.1213538116e10
     },
     "Rotation":{
-        "AxisRA": 268.72,
-        "AxisDE": 64.83,
-        "Period": 1442054.016,
+        "AxisRA": 40.6,
+        "AxisDE": 83.5,
+        "Period": 163106.0928,
         "Long0":0
     }
 },
 "Dione":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Saturn",
         "frame":[40.6,83.5],
@@ -320,18 +330,19 @@
         "dM": 0.00152141960799
     },
     "Params":{
-        "Radius": 561000,
-        "Color": "#a0c0a0",
-        "Mass": 7.34173165e10
+        "Radius": 561400,
+        "Color": "#a0a0a0",
+        "Mass": 7.3116091925e10
     },
     "Rotation":{
-        "AxisRA": 268.72,
-        "AxisDE": 64.83,
-        "Period": 1442054.016,
+        "AxisRA": 40.6,
+        "AxisDE": 83.5,
+        "Period": 236469.5424,
         "Long0":0
     }
 },
 "Rhea":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Saturn",
         "frame":[40.6,83.5],
@@ -353,18 +364,19 @@
         "dM": 0.00092168344151
     },
     "Params":{
-        "Radius": 763000,
-        "Color": "#a0c0a0",
-        "Mass": 1.5417636465e11
+        "Radius": 764045,
+        "Color": "#a0a0a0",
+        "Mass": 1.5394178965e11
     },
     "Rotation":{
-        "AxisRA": 268.72,
-        "AxisDE": 64.83,
-        "Period": 1442054.016,
+        "AxisRA": 40.6,
+        "AxisDE": 83.5,
+        "Period": 390312.2592,
         "Long0":0
     }
 },
 "Titan":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Saturn",
         "frame":[36.4,84.0],
@@ -386,18 +398,19 @@
         "dM": 0.000261258093143
     },
     "Params":{
-        "Radius": 2575000,
-        "Color": "#a0c0a0",
-        "Mass": 8.9802726683e12
+        "Radius": 2574765,
+        "Color": "#f0f0a0",
+        "Mass": 8.9781392545e12
     },
     "Rotation":{
-        "AxisRA": 268.72,
-        "AxisDE": 64.83,
-        "Period": 1442054.016,
+        "AxisRA": 40.6,
+        "AxisDE": 83.5,
+        "Period": 1377686.7072,
         "Long0":0
     }
 },
 "Iapetus":{
+    "Type":"Moon",
     "orbit":{
         "Parent":"Saturn",
         "frame":[288.7,78.9],
@@ -419,14 +432,286 @@
         "dM": 0.0000525120474447
     },
     "Params":{
-        "Radius": 746000,
-        "Color": "#a0c0a0",
-        "Mass": 1.2080485715e11
+        "Radius": 734300,
+        "Color": "#e0e0e0",
+        "Mass": 1.205151324e11
     },
     "Rotation":{
-        "AxisRA": 268.72,
-        "AxisDE": 64.83,
-        "Period": 1442054.016,
+        "AxisRA": 322.291601362,
+        "AxisDE": 76.1961151463,
+        "Period": 6854198.57279,
+        "Long0":0
+    }
+},
+"Ariel":{
+    "Type":"Moon",
+    "orbit":{
+        "Parent":"Uranus",
+        "frame":[257.311,-15.175],
+        "a": 190929e3,
+        "e": 0.001,
+        "i": 0.0,
+        "L": 0.0,
+        "w": 9.6,
+        "M0": 193.5,
+        "t0": "J2000",
+        "P": ""
+    },
+    "orbitRate":{
+        "da": 0,
+        "de": 0,
+        "di": 0,
+        "dL": 0,
+        "dw": 3.9471684762e-7,
+        "dM": 0.00165279580199
+    },
+    "Params":{
+        "Radius": 578900,
+        "Color": "#505050",
+        "Mass": 8.342876875e10
+    },
+    "Rotation":{
+        "AxisRA": 257.311,
+        "AxisDE": -15.175,
+        "Period": 217760.7456,
+        "Long0":0
+    }
+},
+"Umbriel":{
+    "Type":"Moon",
+    "orbit":{
+        "Parent":"Uranus",
+        "frame":[257.311,-15.175],
+        "a": 265986e3,
+        "e": 0.004,
+        "i": 0.1,
+        "L": 174.8,
+        "w": 183.4,
+        "M0": 253.0,
+        "t0": "J2000",
+        "P": ""
+    },
+    "orbitRate":{
+        "da": 0,
+        "de": 0,
+        "di": 0,
+        "dL": 8.7788769195e-8,
+        "dw": 1.7789526266e-7,
+        "dM": 0.00100516112729
+    },
+    "Params":{
+        "Radius": 582400,
+        "Color": "#505050",
+        "Mass": 8.54310592e10
+    },
+    "Rotation":{
+        "AxisRA": 257.311,
+        "AxisDE": -15.175,
+        "Period": 358056.8928,
+        "Long0":0
+    }
+},
+"Titania":{
+    "Type":"Moon",
+    "orbit":{
+        "Parent":"Uranus",
+        "frame":[257.311,-15.175],
+        "a": 436298e3,
+        "e": 0.002,
+        "i": 0.1,
+        "L": 29.5,
+        "w": 184.0,
+        "M0": 68.1,
+        "t0": "J2000",
+        "P": ""
+    },
+    "orbitRate":{
+        "da": 0,
+        "de": 0,
+        "di": 0,
+        "dL": 6.9362591125e-9,
+        "dw": 1.9670910204e-8,
+        "dM": 0.00047857773051
+    },
+    "Params":{
+        "Radius": 788400,
+        "Color": "#a0a0a0",
+        "Mass": 2.2278818407e11
+    },
+    "Rotation":{
+        "AxisRA": 257.311,
+        "AxisDE": -15.175,
+        "Period": 752187.0816,
+        "Long0":0
+    }
+},
+"Oberon":{
+    "Type":"Moon",
+    "orbit":{
+        "Parent":"Uranus",
+        "frame":[257.311,-15.175],
+        "a": 583511e3,
+        "e": 0.002,
+        "i": 0.1,
+        "L": 76.8,
+        "w": 132.2,
+        "M0": 143.6,
+        "t0": "J2000",
+        "P": ""
+    },
+    "orbitRate":{
+        "da": 0,
+        "de": 0,
+        "di": 0,
+        "dL": 5.9169242487e-8,
+        "dw": 7.1925749748e-8,
+        "dM": 0.000309353664629
+    },
+    "Params":{
+        "Radius": 761400,
+        "Color": "#a0a0a0",
+        "Mass": 2.1417833514e11
+    },
+    "Rotation":{
+        "AxisRA": 257.311,
+        "AxisDE": -15.175,
+        "Period": 1163223.6768,
+        "Long0":0
+    }
+},
+"Miranda":{
+    "Type":"Moon",
+    "orbit":{
+        "Parent":"Uranus",
+        "frame":[257.311,-15.175],
+        "a": 129846e3,
+        "e": 0.001,
+        "i": 4.4,
+        "L": 100.9,
+        "w": 154.8,
+        "M0": 73.0,
+        "t0": "J2000",
+        "P": ""
+    },
+    "orbitRate":{
+        "da": 0,
+        "de": 0,
+        "di": 0,
+        "dL": 6.4135107736e-7,
+        "dw": 0.00000127617313045,
+        "dM": 0.00294589186431
+    },
+    "Params":{
+        "Radius": 235800,
+        "Color": "#a0a0a0",
+        "Mass": 4.111369724e9
+    },
+    "Rotation":{
+        "AxisRA": 257.311,
+        "AxisDE": -15.175,
+        "Period": 122124.5856,
+        "Long0":0
+    }
+},
+"Puck":{
+    "Type":"Moon",
+    "orbit":{
+        "Parent":"Uranus",
+        "frame":[257.311,-15.175],
+        "a": 86004e3,
+        "e": 0,
+        "i": 0.3,
+        "L": 216.1,
+        "w": 0.0,
+        "M0": 50.1,
+        "t0": "J2000",
+        "P": ""
+    },
+    "orbitRate":{
+        "da": 0,
+        "de": 0,
+        "di": 0,
+        "dL": 0.00000256122847172,
+        "dw": 0.00000512475813704,
+        "dM": 0.0054615791498
+    },
+    "Params":{
+        "Radius": 81000,
+        "Color": "#a0a0a0",
+        "Mass": 133719630.552
+    },
+    "Rotation":{
+        "AxisRA": 257.311,
+        "AxisDE": -15.175,
+        "Period": 65822.3712,
+        "Long0":0
+    }
+},
+"Triton":{
+    "Type":"Moon",
+    "orbit":{
+        "Parent":"Neptune",
+        "frame":[299.36,43.46],
+        "a": 354800e3,
+        "e": 0,
+        "i": 157.3,
+        "L": 177.7,
+        "w": 0.0,
+        "M0": 63.0,
+        "t0": "J2000",
+        "P": ""
+    },
+    "orbitRate":{
+        "da": 0,
+        "de": 0,
+        "di": 0,
+        "dL": 3.8101909195e-8,
+        "dw": 1.6895307484e-8,
+        "dM": 0.000708658206394
+    },
+    "Params":{
+        "Radius": 1353400,
+        "Color": "#a0a0a0",
+        "Mass": 1.4275663478e12
+    },
+    "Rotation":{
+        "AxisRA": 118.410911543,
+        "AxisDE": -20.7738277085,
+        "Period": 507962.88,
+        "Long0":0
+    }
+},
+"Proteus":{
+    "Type":"Moon",
+    "orbit":{
+        "Parent":"Neptune",
+        "frame":[299.36,43.46],
+        "a": 117700e3,
+        "e": 0.001,
+        "i": 0.6,
+        "L": 355.5,
+        "w": 357.2,
+        "M0": 297.4,
+        "t0": "J2000",
+        "P": ""
+    },
+    "orbitRate":{
+        "da": 0,
+        "de": 0,
+        "di": 0,
+        "dL": 8.7081768039e-7,
+        "dw": 0.00000175503255585,
+        "dM": 0.0037080043632
+    },
+    "Params":{
+        "Radius": 210000,
+        "Color": "#a0a0a0",
+        "Mass": 1.0345167325e9
+    },
+    "Rotation":{
+        "AxisRA": 299.36,
+        "AxisDE": 43.46,
+        "Period": 97018.56,
         "Long0":0
     }
 }

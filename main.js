@@ -6,6 +6,7 @@ var objectRadii = [];
 var objectColor = [];
 var objectMass = [];
 var bodyAxis = [];
+var objectTypes = [];
 var rotP = [];
 var rotL0 = [];
 var maxT = 253402300800;
@@ -20,6 +21,7 @@ var camM = [1,0,0,0,1,0,0,0,1];
 var camP = 0;
 var camY = 0;
 var camD = 6e7;
+var cam3dCenter = [0,0];
 var long = 0.0;
 var lat = 0.0;
 var drawOrbits = true;
@@ -72,8 +74,10 @@ const screen = mainCanvas.getContext("2d");
 //Functions ______________________________________________________________
 function resizeWindow(){
     //scales window to fit the whole screen
-    mainCanvas.width = document.documentElement.clientWidth;
-    mainCanvas.height = document.documentElement.clientHeight;
+    mainCanvas.width = document.documentElement.clientWidth - 0;
+    mainCanvas.height = document.documentElement.clientHeight - 0;
+    mainCanvas.x = 0;
+    mainCanvas.y = 0;
     screen.setTransform(1,0,0,-1,screen.canvas.width/2,screen.canvas.height/2);
 };
 function leadingzeros(x,y){
@@ -196,6 +200,10 @@ function cross(x,y){
     //returns the cross product of x and y
     return [x[1]*y[2]-x[2]*y[1],x[2]*y[0]-x[0]*y[2],x[0]*y[1]-x[1]*y[0]];
 }
+function dot(x,y){
+    //returns the dot product of x and y
+    return [x[0]*y[0]+x[1]*y[1]+x[2]*y[2]];
+}
 function MtimesM(M1,M2){
     //Matrix multiply M2*M1
     //where matrix M is defined by indecies in M:
@@ -246,7 +254,7 @@ function sin(x){
 function proj3d(v){
     //projects 3d point v to a point onscren
     var vrel = Mvec([v[0]-camV[0],v[1]-camV[1],v[2]-camV[2]],camM);
-    return [-screen.canvas.height/(2*Math.tan(Math.PI*camFOV/360))*vrel[1]/vrel[0],screen.canvas.height/(2*Math.tan(Math.PI*camFOV/360))*vrel[2]/vrel[0]];
+    return [cam3dCenter[0]-screen.canvas.height/(2*Math.tan(Math.PI*camFOV/360))*vrel[1]/vrel[0],cam3dCenter[1]+screen.canvas.height/(2*Math.tan(Math.PI*camFOV/360))*vrel[2]/vrel[0]];
 };
 function depth3d(v){
     var vrel = Mvec([v[0]-camV[0],v[1]-camV[1],v[2]-camV[2]],camM);
@@ -470,7 +478,7 @@ function drawImg(Img,x,y,scale){
 }
 function drawOrbit(a,e,i,L,w,vP,frame,steps,width,col){
     var ang = 0;
-    if(0.2<Math.abs(depth3d(vP))/a<3){
+    if(a<5*objectRadii[currentBody]){
         var draw = true;
     }else{
         var draw = false;
@@ -530,8 +538,11 @@ function appendText(p1,size,col,priority,text){
     };
 }
 function appendSurface(objectid,PlanetDecalid,col,priority){
+    var s = 0.5*objectRadii[objectid]/depth3d(objectPos[objectid])*screen.canvas.height/Math.tan(camFOV*Math.PI/360)
+    if(s>3){
     vert.push(objectPos[objectid]);
     draw.push(["surf",vert.length-1,objectid,PlanetDecalid,col,priority]);
+    }
 }
 function addRings(body,rmin,rmax,col,priority){
     var i = 0;
@@ -689,11 +700,12 @@ function coastline(data,body,res){
 
 
 
-function addObject(name,R,color,Mass){
+function addObject(name,R,color,Mass,type){
     objectNames.push(name);
     objectRadii.push(R);
     objectColor.push(color);
     objectMass.push(Mass);
+    objectTypes.push(type);
 }
 function updateObjectId(id){
     var orb2 = getOrbitNow(id,T);
@@ -740,7 +752,7 @@ function UpdateScene(){
             appendDot(objectPos[i],objectRadii[i],objectColor[i],0);
             appendDot(objectPos[i],-1,objectColor[i],0);
         }else{
-            if ((Math.abs(depth3d(objectPos[i])/objectRadii[i])) > 1e7){
+            if (((Math.abs(depth3d(objectPos[i])/objectRadii[i])) > 5e5)){
                 setColor(objectColor[i]);
                 drawdot3d(objectPos[i],objectRadii[i]);
                 setColor(objectColor[i]);
@@ -754,7 +766,7 @@ function UpdateScene(){
         drawdot3d(objectPos[i],-1);
         var d = depth3d(objectPos[i]);
         if(d>0 && drawNames){
-        if((0.1<d/orbitalParams[i].a && d/orbitalParams[i].a<10 && orbitalParams[i].Parent != -1) || (d/objectRadii[i] <1000) || (orbitalParams[i].Parent == -1 && (d/lr<1 || camD/lr >5))){
+        if((0.1<d/orbitalParams[i].a && d/orbitalParams[i].a<10 && orbitalParams[i].Parent != -1) || (d/objectRadii[i] <1000) || (orbitalParams[i].Parent == -1 && (d/lr<1)) || (currentBody == -1 && 0.5*(orbitalParams[i].a/Math.abs(d))*screen.canvas.height/Math.tan(camFOV*Math.PI/360)>100 && d/lr<1)){
             var p = objectPos[i];
             p = addvec(p,[-objectRadii[i]*camM[2],-objectRadii[i]*camM[5],-objectRadii[i]*camM[8]]);
             appendText(p,-20,objectColor[i],0,objectNames[i]);
@@ -768,7 +780,7 @@ function UpdateScene(){
             setColor(objectColor[i]);
             if(orb.Parent == -1){
                 var parentpos = [0,0,0];
-            }else if(0.1<camD/orb.a && camD/orb.a<50){
+            }else if((0.1<camD/orb.a && camD/orb.a<50) || (currentBody == -1 && orbitalParams[i].Parent != -1 && 0.5*(orbitalParams[i].a/Math.abs(depth3d(objectPos[i])))*screen.canvas.height/Math.tan(camFOV*Math.PI/360)>30)){
                 var parentpos = objectPos[orb.Parent];
                 var distance = Math.sqrt(Math.pow(objectPos[i][0]-camV[0],2)+Math.pow(objectPos[i][1]-camV[1],2)+Math.pow(objectPos[i][2]-camV[2],2));
                 drawOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,parentpos,orb.frame,60,1,objectColor[i]);
@@ -784,19 +796,25 @@ function UpdateScene(){
     //Jupiter
     appendSurface(6,1,"#ffdf75",0);
     appendSurface(6,2,"#ff0000",0);
+    addRings(6,1.225e8,1.29e8,"#cfcfcf04",0);
     //Saturn
     appendSurface(7,1,"#c0c090",0);
     addRings(7,9.2000e7,1.36000e8,"#ffdf75",0);
+    //Uranus
+    addRings(8,5.1149e7,5.2149e7,"#cfcfcf86",0);
+    //Neptune
+    appendSurface(9,2,"#8ea7dd",0);
+    addRings(9,5.3200e7,5.7200e7,"#cfcfcf49",0);
 }
 
-window.onmousemove = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
-window.ontouchmove = function(e){mouse.x = e.touches[0].clientX, mouse.y = e.touches[0].clientY};
-window.ontouchstart = function(e){mouse.d = true,mouse.x = e.touches[0].clientX, mouse.y = e.touches[0].clientY};
+MainCanvas.onmousemove = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
+MainCanvas.ontouchmove = function(e){mouse.x = e.touches[0].clientX, mouse.y = e.touches[0].clientY};
+MainCanvas.ontouchstart = function(e){mouse.d = true,mouse.x = e.touches[0].clientX, mouse.y = e.touches[0].clientY};
 window.ontouchend = function(e){mouse.d = false};
 window.onmouseup = function(e){mouse.d = false};
-window.onmousedown = function(e){mouse.d = true};
-window.ondrag = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
-window.onwheel = function(e){
+MainCanvas.onmousedown = function(e){mouse.d = true};
+MainCanvas.ondrag = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
+MainCanvas.onwheel = function(e){
     if(currentBody != -1){
         camD *= Math.exp(0.25*(e.deltaY/100));
     }else{
@@ -891,24 +909,39 @@ function UpdateCamera(){
 
     }else if(mouseOld.d && !mouse.d && !mouseDrag.d){
         var m = [mouse.x-window.innerWidth/2,window.innerHeight/2 - mouse.y];
-        var i = 0
+        var i = objectNames.length - 1;
         var hit = -1;
-        while(i<objectNames.length){
+        var hitd = Infinity;
+        while(i>=0){
             var p = proj3d(objectPos[i]);
-            var d =depth3d(objectPos[i]);
+            var d = depth3d(objectPos[i]);
             var Dist2d = Math.sqrt(Math.pow(p[0]-m[0],2)+Math.pow(p[1]-m[1],2));
-            if((Dist2d < 20 || Dist2d<0.5*objectRadii[i]/d*screen.canvas.height/Math.tan(camFOV*Math.PI/360)) && d>0){
+            if(d>0 && (Dist2d<20 || Dist2d<0.5*objectRadii[i]/d*screen.canvas.height/Math.tan(camFOV*Math.PI/360)) && d<hitd){
                 hit = i;
-                break;
+                hitd = d;
             }
-
-            i += 1;
+            i -= 1;
+        }
+        if(hit != -1){
+            var r = 0.5*(orbitalParams[hit].a/Math.abs(hitd))*screen.canvas.height/Math.tan(camFOV*Math.PI/360);
+            console.log(r);
+            if(r < 40 && hit != -1){
+                while(r < 40 && (orbitalParams[hit].Parent != -1) && hit != -1){
+                    hit = orbitalParams[hit].Parent;
+                    hitd = depth3d(objectPos[hit]);
+                    r = 0.5*(orbitalParams[hit].a/Math.abs(hitd))*screen.canvas.height/Math.tan(camFOV*Math.PI/360);
+                    console.log(hit);
+                }
+            }
         }
         if(hit == -1){
             selectedBody = -1;
         }else{
             if(selectedBody == hit){
                 currentBody = hit;
+                if(camD < 4*objectRadii[currentBody]){
+                    camD = 4*objectRadii[currentBody];
+                }
             }else{
                 selectedBody = hit;
             }
@@ -1075,7 +1108,9 @@ function Render(){
         }else if(type == "t"){
             setColor(draw[i][4]);
             screen.fillStyle = screen.strokeStyle;
-            drawpolygon3d([vert[draw[i][1]],vert[draw[i][2]],vert[draw[i][3]]]);
+            if(Math.min(depth3d(vert[draw[i][1]]),depth3d(vert[draw[i][2]]),depth3d(vert[draw[i][3]]))>0){
+                drawpolygon3d([vert[draw[i][1]],vert[draw[i][2]],vert[draw[i][3]]]);
+            }
         }else if(type == "text"){
             setColor(draw[i][4]);
             var d = depth3d(vert[draw[i][1]]);
@@ -1191,11 +1226,7 @@ function RenderUI(){
     
 
     if(selectedBody != -1){
-        drawText("Selected:",[-screen.canvas.width/2+5,screen.canvas.height/2-150*UIscale],"left",String(Math.round(24*UIscale))+"px courier");
-        drawText(objectNames[selectedBody],[-screen.canvas.width/2+5,screen.canvas.height/2-(150+24)*UIscale],"left",String(Math.round(24*UIscale))+"px courier");
-        if(tracking){
-        drawText("TRACKING "+objectNames[selectedBody],[-screen.canvas.width/2+5,screen.canvas.height/2-(150+24*2)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");  
-    }
+        //draw outline for the body:
         var p = objectPos[selectedBody];
         var d = depth3d(p);
         if(depth3d(p)>0){
@@ -1204,13 +1235,57 @@ function RenderUI(){
             setColor("#ffffff");
             drawCircle(p2[0],p2[1],(1+0.1*Math.sin(currentT*Math.PI*2))*(10+1.3*(screen.canvas.height*0.5*objectRadii[selectedBody]/(d*Math.tan(camFOV*Math.PI/360)))),1,false);
         }
+        //draw rectangle for the thingy
+        setColor("#53535393");
+        cam3dCenter = [250*UIscale,0];
+        drawRect(-screen.canvas.width/2,screen.canvas.height/2-(150)*UIscale,500*UIscale,-Math.min(600*UIscale,screen.canvas.height-50-screen.canvas.height/2+(150)*UIscale));
+        setColor("#ffffff");
+        //List name and if the camera is tracking it
+        drawText(objectNames[selectedBody],[-screen.canvas.width/2+5,screen.canvas.height/2-(155)*UIscale],"left",String(Math.round(36*UIscale))+"px courier");
+        drawText(objectTypes[selectedBody],[-screen.canvas.width/2+5,screen.canvas.height/2-(155+36)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");  
+        if(tracking){
+            drawText("TRACKING "+objectNames[selectedBody],[-screen.canvas.width/2+5,-screen.canvas.height/2+(36*2)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");  
+        }
+        text = [];
+        //Add all of the selected planets information into the text var:
+        i = selectedBody;
+        text.push([24,"Physical info:"]);
+        text.push([18,"Mass: "+String(Math.round(objectMass[i]/G))+"kg"]);
+        text.push([18,"Radius: "+String(Math.round(objectRadii[i]/1000))+"km"]);
+        text.push([18,"Rotation Period: "+String(Math.round(rotP[i]/360)/10)+"hours"]);
 
+        if(orbitalParams[i].Parent != -1){
+        text.push([24,"Orbit info:"]);
+        text.push([18,"Orbits: "+String(objectNames[orbitalParams[i].Parent])]);
+        text.push([18,"Orbit radius: "+String(Math.round(orbitalParams[i].a/1000))+"km"]);
+        text.push([18,"Orbit Period: "+String(Math.round(orbitalParams[i].P/8640)/10)+"days"]);
+        }else{
+        text.push([24,"Location info:"]);
+        text.push([18,""]);
+        text.push([18,"Distance to Sun: "+String(Math.round(10*orbitalParams[i].a/lr)/10)+"lr"]);
+        text.push([18,""]);
+        }
+
+        
+
+
+        
+        var val = 0
+        //draw all the textual information that was put in to the text variable:
+        for(var i=0;i < text.length;i+=1){
+            drawText(text[i][1],[-screen.canvas.width/2+5,screen.canvas.height/2-(210+val)*UIscale],"left",String(Math.round(text[i][0]*UIscale))+"px courier");
+            val += text[i][0];
+        }
+
+        
+    }else{
+        cam3dCenter = [0,0];
     }
     setColor("#808080");
     drawRect(-screen.canvas.width/2,-screen.canvas.height/2,300*UIscale,30*UIscale);
     setColor("#000000")
     drawText(" View From Location",[-screen.canvas.width/2,-screen.canvas.height/2+26*UIscale],"left",String(Math.round(24*UIscale))+"px courier");
-    setColor("#ffffff")
+    setColor("#ffffff");
     setColor("#808080");
     var x = screen.canvas.width/2
     var y = -screen.canvas.height/2
@@ -1383,20 +1458,34 @@ function loadObjects(file){
             orb.P = 86400/parseFloat(tle.substring(52+69,63+69));
             orb.a = Math.pow(objectMass[orb.Parent]*Math.pow(orb.P/(2*Math.PI),2),1/3);
             orbR.dL = 180/Math.PI*(-1.5*(Math.pow(objectRadii[orb.Parent],2)/Math.pow(orb.a*(1-orb.e*orb.e),2))*(1.08262668e-3*Math.sqrt(objectMass[orb.Parent]/Math.pow(orb.a,3)))*cos(orb.i));
+            var M = [1,0,0,0,1,0,0,0,1];
+            M = MtimesM(M,RotM("z",orb.w));
+            M = MtimesM(M,RotM("x",orb.i));
+            M = MtimesM(M,RotM("z",orb.L));
+            M = MtimesM(M,RotM("x",-23.43928));
+            bodyAxis.push(M);
+            rotL0.push(0);
+            rotP.push(orb.P);
+            
         }else{
            console.error("Object does not have position type: \n",obj);
         }
         if(orb.t0 =="J2000"){
             orb.t0 = 946728000;
         }
-        addObject(name,obj.Params.Radius,obj.Params.Color,obj.Params.Mass);
+        if(typeof obj.Type != undefined){
+            var type = obj.Type;
+        }else{
+            var type = "unspecified";
+        }
+        addObject(name,obj.Params.Radius,obj.Params.Color,obj.Params.Mass,type);
         addObjectOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,orb.M0,orb.t0,orb.Parent,orb.P,orb.frame);
         if(typeof orbR != 'undefined'){
             addObjectOrbitRate(orbR.da,orbR.de,orbR.di,orbR.dL,orbR.dw,orbR.dM);
         }else{
             orbitalRates.push({da:0,de:0,di:0,dL:0,dw:0});
         }
-        if(typeof obj.Rotation != 'undefined'){
+        if(typeof obj.Rotation != 'undefined' && typeof tle == 'undefined'){
             var rot = obj.Rotation;
             if(typeof rot.AxisRA !='undefined' && typeof rot.AxisDE !='undefined'){
                 var M = [1,0,0,0,1,0,0,0,1];
@@ -1416,7 +1505,7 @@ function loadObjects(file){
             if(typeof rot.Period != 'undefined'){
                 rotP.push(rot.Period);
             }
-        }else{
+        }else if(typeof tle == 'undefined'){
             bodyAxis.push([1,0,0,0,1,0,0,0,1]);
             rotL0.push(0);
             rotP.push(Infinity);
