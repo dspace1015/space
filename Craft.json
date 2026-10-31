@@ -1,20 +1,42 @@
 {
 "ISS":{
     "Type":"Space Station",
-    "tle": "1 25544U 98067A   26302.17661613  .00005622  00000-0  10975-3 0  9994\n2 25544  51.6334 357.0447 0007004 322.8383  37.2120 15.49096712592526",
+    "tle": "1 25544U 98067A   26303.46683196  .00007083  00000+0  13602-3 0  9999\n2 25544  51.6332 350.6604 0007060 327.9433  32.1125 15.49116094592729",
     "Params":{
         "Radius": 45,
-        "Color": "#c0c0c0",
-        "Mass": 0.0000320366472
-    }
+        "Color": "#b0b0b0",
+        "Mass": 480000
+    },
+    "Desc":"The International Space Station (ISS)\nis the one place in space that humans have\noccupied since the year 2000. It is the\njoint effort of many different nations\ncoming together to do research in\nmicrogravity.\n\nThere are currently 7 people abord\nas of Oct 30 2026:\n\n- Jessica Watkings(USA)\n- Luke Delaney(USA)\n- Joshua Kutryk(Canada)\n- Sergey Teteryatnikov(Russia)\n(which are part of the Crew-13 Mission)\n\n- Pyotr Dubrov(Russia)\n- Anna Kikina(Russia)\n- Anil Menon(USA)\n(which are part of the Soyuz MS-29 Mission)"
 },
 "Tiangong":{
     "Type":"Space Station",
-    "tle": "1 48274U 21035A   26302.25494642  .00008973  00000+0  10669-3 0  9996\n2 48274  41.4690 227.5032 0003628 230.7042 129.3476 15.61229032314101",
+    "tle": "1 48274U 21035A   26303.21447268  .00006760  00000+0  81335-4 0  9996\n2 48274  41.4688 221.6598 0003781 234.2768 125.7720 15.61239533314259",
     "Params":{
         "Radius": 45,
-        "Color": "#c0c0c0",
-        "Mass": 0.0000320366472
-    }
+        "Color": "#b0b0b0",
+        "Mass": 100000
+    },
+    "Desc":"Tiangong or the Chinese Space Station(CSS)\nis the Spacestation that is built and\noperated solely by China. First launched\nin 2021, it is much newer than the ISS and\nis intended to last longer.\n\nThere are currently 3 people abord\nas of Oct 30 2026:\n\n- Zhu Yangzhu\n- Zhang Zhiyuan\n- Lai Ka-ying\n(which are part of the Shenzhou 23 mission)"
+},
+"SATGUS":{
+    "Type":"Satellite",
+    "tle": "1 62713U 25009DJ  26303.17091016  .00004230  00000+0  32137-3 0  9991\n2 62713  97.6855  23.3188 0002934  42.7520 317.3933 15.02702985 97828",
+    "Params":{
+        "Radius": 0.2,
+        "Color": "#b0b0b0",
+        "Mass": 16
+    },
+    "Desc":"SATGUS is a satellite launched by SpaceX\nbackin January 2025 as a part of\nCrunchlabs™' efforts to inspire future\nengineers.\n\nIts purpose is to recieve images from\nthe Earth, display them on orbit, and\ntake a \"selfie\" with the Earth in\nthe background.\n\nAs of Oct 30 2026 its status is marked\nas Inactive on the n2yo website."
+},
+"HST":{
+    "Type":"Satellite",
+    "tle": "1 20580U 90037B   26303.49394413  .00004848  00000+0  14450-3 0  9995\n2 20580  28.4732 234.8378 0001758 213.2734 146.7752 15.32123554809337",
+    "Params":{
+        "Radius": 0.2,
+        "Color": "#b0b0b0",
+        "Mass": 11110
+    },
+    "Desc":"Hubble Space Telescope (HST)"
 }
 }

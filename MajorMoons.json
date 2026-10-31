@@ -24,7 +24,7 @@
     "Params":{
         "Radius": 11080,
         "Color": "#808080",
-        "Mass": 710012.19357
+        "GM": 710012.19357
     },
     "Rotation":{
         "AxisRA": 317.7,
@@ -58,7 +58,7 @@
     "Params":{
         "Radius": 6270,
         "Color": "#808080",
-        "Mass": 100781.95265
+        "GM": 100781.95265
     },
     "Rotation":{
         "AxisRA": 316.6,
@@ -92,7 +92,7 @@
     "Params":{
         "Radius": 1821500,
         "Color": "#c0c0a0",
-        "Mass": 5.9614447191e12
+        "GM": 5.9614447191e12
     },
     "Rotation":{
         "AxisRA": 268.05,
@@ -126,7 +126,7 @@
     "Params":{
         "Radius": 1560800,
         "Color": "#c0c0ff",
-        "Mass": 3.20366472e12
+        "GM": 3.20366472e12
     },
     "Rotation":{
         "AxisRA": 268.08,
@@ -160,7 +160,7 @@
     "Params":{
         "Radius": 2631200,
         "Color": "#a0a0a0",
-        "Mass": 9.8906473929e12
+        "GM": 9.8906473929e12
     },
     "Rotation":{
         "AxisRA": 268.20,
@@ -194,7 +194,7 @@
     "Params":{
         "Radius": 2410300,
         "Color": "#a0c0a0",
-        "Mass": 7.1808809839e12
+        "GM": 7.1808809839e12
     },
     "Rotation":{
         "AxisRA": 268.72,
@@ -230,7 +230,7 @@
     "Params":{
         "Radius": 197490,
         "Color": "#959595",
-        "Mass": 2.5034904468e9
+        "GM": 2.5034904468e9
     },
     "Rotation":{
         "AxisRA": 40.6,
@@ -264,7 +264,7 @@
     "Params":{
         "Radius": 252040,
         "Color": "#a0a0b8",
-        "Mass": 7.2103680479e9
+        "GM": 7.2103680479e9
     },
     "Rotation":{
         "AxisRA": 40.6,
@@ -298,7 +298,7 @@
     "Params":{
         "Radius": 531000,
         "Color": "#a0a0a0",
-        "Mass": 4.1213538116e10
+        "GM": 4.1213538116e10
     },
     "Rotation":{
         "AxisRA": 40.6,
@@ -332,7 +332,7 @@
     "Params":{
         "Radius": 561400,
         "Color": "#a0a0a0",
-        "Mass": 7.3116091925e10
+        "GM": 7.3116091925e10
     },
     "Rotation":{
         "AxisRA": 40.6,
@@ -366,7 +366,7 @@
     "Params":{
         "Radius": 764045,
         "Color": "#a0a0a0",
-        "Mass": 1.5394178965e11
+        "GM": 1.5394178965e11
     },
     "Rotation":{
         "AxisRA": 40.6,
@@ -400,7 +400,7 @@
     "Params":{
         "Radius": 2574765,
         "Color": "#f0f0a0",
-        "Mass": 8.9781392545e12
+        "GM": 8.9781392545e12
     },
     "Rotation":{
         "AxisRA": 40.6,
@@ -434,7 +434,7 @@
     "Params":{
         "Radius": 734300,
         "Color": "#e0e0e0",
-        "Mass": 1.205151324e11
+        "GM": 1.205151324e11
     },
     "Rotation":{
         "AxisRA": 322.291601362,
@@ -468,7 +468,7 @@
     "Params":{
         "Radius": 578900,
         "Color": "#505050",
-        "Mass": 8.342876875e10
+        "GM": 8.342876875e10
     },
     "Rotation":{
         "AxisRA": 257.311,
@@ -502,7 +502,7 @@
     "Params":{
         "Radius": 582400,
         "Color": "#505050",
-        "Mass": 8.54310592e10
+        "GM": 8.54310592e10
     },
     "Rotation":{
         "AxisRA": 257.311,
@@ -536,7 +536,7 @@
     "Params":{
         "Radius": 788400,
         "Color": "#a0a0a0",
-        "Mass": 2.2278818407e11
+        "GM": 2.2278818407e11
     },
     "Rotation":{
         "AxisRA": 257.311,
@@ -570,7 +570,7 @@
     "Params":{
         "Radius": 761400,
         "Color": "#a0a0a0",
-        "Mass": 2.1417833514e11
+        "GM": 2.1417833514e11
     },
     "Rotation":{
         "AxisRA": 257.311,
@@ -604,7 +604,7 @@
     "Params":{
         "Radius": 235800,
         "Color": "#a0a0a0",
-        "Mass": 4.111369724e9
+        "GM": 4.111369724e9
     },
     "Rotation":{
         "AxisRA": 257.311,
@@ -638,7 +638,7 @@
     "Params":{
         "Radius": 81000,
         "Color": "#a0a0a0",
-        "Mass": 133719630.552
+        "GM": 133719630.552
     },
     "Rotation":{
         "AxisRA": 257.311,
@@ -672,7 +672,7 @@
     "Params":{
         "Radius": 1353400,
         "Color": "#a0a0a0",
-        "Mass": 1.4275663478e12
+        "GM": 1.4275663478e12
     },
     "Rotation":{
         "AxisRA": 118.410911543,
@@ -706,7 +706,7 @@
     "Params":{
         "Radius": 210000,
         "Color": "#a0a0a0",
-        "Mass": 1.0345167325e9
+        "GM": 1.0345167325e9
     },
     "Rotation":{
         "AxisRA": 299.36,

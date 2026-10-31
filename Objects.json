@@ -13,14 +13,15 @@
     "Params":{
         "Radius": 696e6,
         "Color": "#ffffaa",
-        "Mass": 1.32712440018e20
+        "GM": 1.32712440018e20
     },
     "Rotation":{
         "AxisRA": 286.13,
         "AxisDE": 63.87,
         "Period": 2164320,
         "Long0": 0
-    }
+    },
+    "Desc":"The Sun is a big ball of super heated\nplazma that is supported by pressure\nvia Nuclear fusion. Or at least thats our\ncurrent understanding. Its surface\ntemperature is about 5527°C or 9980°F\nwhich means that almost all of the light it\ngives off is from blackbody radiative heat.\n\nThis common misconception is that a light\nparticle starts at the core of the sun\nand works its wayoutward for thousands\nof years until it reaches the surface,\nwhile true that some photons do this,\nbasically 100% that we see are made \ndirectly on the surface from the glow of\nthe high temperature."
 },
 "Earth":{
     "Type":"Planet",
@@ -47,14 +48,15 @@
     "Params":{
         "Radius": 6378009,
         "Color": "#0080ff",
-        "Mass": 3.9860044188e14
+        "GM": 3.9860044188e14
     },
     "Rotation":{
         "AxisRA": 0,
         "AxisDE": 90,
         "Period": 86164.0996642,
         "Long0": 280.46061837
-    }
+    },
+    "Desc":"Earth is the third planet from the Sun.\nThis planet is where every human has \ngrown up and is the only planet we know of \nthat we can live on.\n\nIt contains a breathable atmosphere\ncomposed of 21% Oxygen and 78% Nitrogen,\nalong with ~1% of other gases.\n\nBeing where we are from its orbit is the \neasiest to get to and therefore it has\nthe highest density of orbiting objects\nand satellites in the solar system. At the\nsame time,it is the most diverse, with\nvast oceans anddeep forests, that it turns\nout we have mapped more of the surfaces\nof the Moon and Mars than we have of\nour own planet."
 },
 "Moon":{
     "Type":"Moon",
@@ -81,14 +83,15 @@
     "Params":{
         "Radius": 1738100,
         "Color": "#808080",
-        "Mass": 4.902800118e12
+        "GM": 4.902800118e12
     },
     "Rotation":{
         "AxisRA": 266.86,
         "AxisDE": 65.64,
         "Period": 2360591.5104,
         "Long0": 30
-    }
+    },
+    "Desc":"The moon is Earth's moon, or in other \nwords, Earth's only natural satellite.\nIt is the same moon that every person\nhas seen when they look up at the \nnight sky.\n\nIt is also true that we only ever get\nto see one side of the Moon,\nbecause it is tidally locked. Like almost\nevery other moon in the solar system,\ngravity has a stronger pull on one side\nand keeps that side naturally facing us.\nAs you explore more, you will see that\nthere is not one moon depicted here that\nis not tidally locked. While intuitivley\nit seems like this phenomenon is rare,\nit is actually very common."
 },
 "Mercury":{
     "Type":"Planet",
@@ -115,14 +118,15 @@
     "Params":{
         "Radius": 2439.7e3,
         "Color": "#a0a0a0",
-        "Mass": 2.2031870799860e13
+        "GM": 2.2031870799860e13
     },
     "Rotation":{
         "AxisRA": 281.010,
         "AxisDE": 61.414,
         "Period": 5067360,
         "Long0": 0
-    }
+    },
+    "Desc":"Mercury is the first planet from the Sun\nand it is the second hottest. It does not\nhave any atmosphere because it is the\nclosest to the Sun, meaning its too hot\nand gravity too weak to support it. \n\nFun fact: while Venus is known for having\na day longer than its year, in terms of\nactually living on the surface, Mercury's\nday to year ratio is actually longer;\nBecause Mercury spins in the same direction\nthe rotation is closer to matching,(while\nNOT tidally locked) it takes longer than\none Mercury year for the sun to pass over\nthe surface once. This works out to\n2 Mercury years per Mercury day due to its\n3:2 rotation to orbital ratio.\n"
 },
 "Venus":{
     "Type":"Planet",
@@ -149,14 +153,15 @@
     "Params":{
         "Radius": 6052e3,
         "Color": "#ffffee",
-        "Mass": 3.248585926e14
+        "GM": 3.248585926e14
     },
     "Rotation":{
         "AxisRA": 272.76,
         "AxisDE": 67.16,
         "Period": -10087200,
         "Long0": 0
-    }
+    },
+    "Desc":"Venus is the Second Planet from the Sun\nand is the second largest rocky planet\nin the Solar System. It has a very harsh\natmosphere, with ~90x the pressure as\nEarth, full of 96% Carbon Dioxide and\ntemperatures on average of 467°C\nor 872°F, you would not survive for\na second here.\n\nDont even think about wanting to come\nvisit because this place would destroy any\nvehicle meant to keep you alive.\n\nVenus is also the brightest planet as\nseen from Earth and can usually be\nspotted early mornings before Sunrise\nor just after Sunset."
 },
 "Mars":{
     "Type":"Planet",
@@ -183,14 +188,15 @@
     "Params":{
         "Radius": 3389.5e3,
         "Color": "#a08040",
-        "Mass": 4.2828372e13
+        "GM": 4.2828372e13
     },
     "Rotation":{
         "AxisRA": 317.681,
         "AxisDE": 52.887,
         "Period": 88642.44,
         "Long0": 0
-    }
+    },
+    "Desc":"Mars is the fourth planet from the Sun\nand is the second most \"habitable\" planet\nin the solar system besides Earth. Don't\nLet this fool you though, you would die\nin less than a minute trying to breathe\nits air.\n\nMars's atmosphere is much thinner than\nEarth's, 95% Carbon dioxide with only\n0.6% of Earth's pressure. Because of this\nparachutes don't work completely and\nspacecraft need rockets to touch down on\nthe surface. People would need a spacesuit\nto walk outside.\n\nDue to the lower protection from the\natmosphere and the lack of magnetic field,\nMars is much more prone to radiation,\nso anyone living on Mars would need good\nradiation shielding. Fluids like water seem\nto do a good job at blocking damaging\nradiation so the technology exists its only\na matter of infrastructure.\n\nMars has two moons, Phobos and Deimos,\nif you're even willing to call them moons.\nThey are both very small and believed to\nbe captured asteroids. both are only a\ncouple dozen miles/kilometers wide. They\nboth travel opposite directions from the\nperspective of the surface, Phobos East,\nand Deimos slower\nwest.\n\nIt is the only other rocky planet than\nEarth to have moons."
 },
 "Jupiter":{
     "Type":"Planet",
@@ -217,7 +223,7 @@
     "Params":{
         "Radius": 69911e3,
         "Color": "#ffa080",
-        "Mass": 1.266865349e17
+        "GM": 1.266865349e17
     },
     "Rotation":{
         "AxisRA": 268.057,
@@ -251,7 +257,7 @@
     "Params":{
         "Radius": 58232e3,
         "Color": "#e0e0a0",
-        "Mass": 3.79311879e16
+        "GM": 3.79311879e16
     },
     "Rotation":{
         "AxisRA": 40.589,
@@ -285,7 +291,7 @@
     "Params":{
         "Radius": 25362e3,
         "Color": "#c6e7e7",
-        "Mass": 5.7939399e15
+        "GM": 5.7939399e15
     },
     "Rotation":{
         "AxisRA": 257.311,
@@ -319,7 +325,7 @@
     "Params":{
         "Radius": 24622e3,
         "Color": "#b0d0e0",
-        "Mass": 6.8365299e15
+        "GM": 6.8365299e15
     },
     "Rotation":{
         "AxisRA": 299.36,

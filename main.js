@@ -4,7 +4,8 @@ var objectPos = []
 var objectNames = [];
 var objectRadii = [];
 var objectColor = [];
-var objectMass = [];
+var objectGMass = [];
+var objectDesc = [];
 var bodyAxis = [];
 var objectTypes = [];
 var rotP = [];
@@ -31,7 +32,21 @@ var lightTtime = true;
 var camFrame = 0;
 var UIscale = 1.0;
 var Menu = 0;
+var infoScroll = 0;
 var halt = false;
+
+//Files to try is the order in which files are loaded.
+//the format is as follows:
+// ["the file to load","The file its waiting to finish before it can start"]
+// This forces the files to load in a certain order.
+// If you remix this project and add your own files DO NOT put and object in orbit around a planet in a file that loads after. It must be from one already loaded or in the same file.
+var files2Try = [
+    ["Objects.json",""],
+    ["MajorMoons.json","Objects.json"],
+    ["Craft.json","MajorMoons.json"],
+    ["Stars.json","Craft.json"]
+]
+var filesLoaded = [];
 
 var camFOV = 70;
 var defaultFOV = 70;
@@ -43,17 +58,7 @@ var selectedBody = -1;
 var currentBody = 1;
 var aspect = window.innerWidth / window.innerHeight;
 
-
-var bin0 = [];
-    var bin1 = [];
-    var bin2 = [];
-    var bin3 = [];
-    var bin4 = [];
-    var bin5 = [];
-    var bin6 = [];
-    var bin7 = [];
-    var bin8 = [];
-    var bin9 = [];
+selectedBody = 2;
 
 const G = 6.6743015e-11;
 const c = 2.99792458e8;
@@ -498,7 +503,7 @@ function drawOrbit(a,e,i,L,w,vP,frame,steps,width,col){
 function addObjectOrbit(a,e,i,L,w,M0,t0,Parent,P,frame){
     var period = P;
     if(period == ""){
-        period = 2*Math.PI*Math.sqrt(Math.pow(a,3)/objectMass[Parent]);
+        period = 2*Math.PI*Math.sqrt(Math.pow(a,3)/objectGMass[Parent]);
     }
     orbitalParams.push({Parent:Parent,a:a,e:e,i:i,L:L,w:w,M0:M0,t0:t0,P:period,frame:frame});
     objectPos.push(orbit2xyz(a,e,i,L,w,meanAnom2TrueAnom(e,M0),[0,0,0],frame));
@@ -704,7 +709,7 @@ function addObject(name,R,color,Mass,type){
     objectNames.push(name);
     objectRadii.push(R);
     objectColor.push(color);
-    objectMass.push(Mass);
+    objectGMass.push(Mass);
     objectTypes.push(type);
 }
 function updateObjectId(id){
@@ -737,7 +742,7 @@ function getOrbitNow(id,T){
 function UpdateBodies(){
     var i = 0;
     while(i<objectNames.length){
-        if(orbitalParams[i].Parent != -1){
+        if(orbitalParams[i].Parent != -1 && Math.abs(depth3d(objectPos[i]))){
             updateObjectId(i);
         }
         i += 1;
@@ -748,29 +753,26 @@ function UpdateScene(){
     draw = [];
     var i = 0;
     while(i<objectNames.length){
-        if((Math.abs(depth3d(objectPos[i])/objectRadii[i])) < 50){
+        if((Math.abs(depth3d(objectPos[i])/objectRadii[i])) < 1e7){
             appendDot(objectPos[i],objectRadii[i],objectColor[i],0);
             appendDot(objectPos[i],-1,objectColor[i],0);
         }else{
-            if (((Math.abs(depth3d(objectPos[i])/objectRadii[i])) > 5e5)){
-                setColor(objectColor[i]);
-                drawdot3d(objectPos[i],objectRadii[i]);
-                setColor(objectColor[i]);
-                drawdot3d(objectPos[i],-1);
-            }else{
-                appendDot(objectPos[i],objectRadii[i],objectColor[i],0);
-                appendDot(objectPos[i],-1,objectColor[i],0);
-            }
+            setColor(objectColor[i]);
+            drawdot3d(objectPos[i],objectRadii[i]);
+            setColor(objectColor[i]);
+            drawdot3d(objectPos[i],-1);
         }
         setColor(objectColor[i]);
         drawdot3d(objectPos[i],-1);
         var d = depth3d(objectPos[i]);
         if(d>0 && drawNames){
-        if((0.1<d/orbitalParams[i].a && d/orbitalParams[i].a<10 && orbitalParams[i].Parent != -1) || (d/objectRadii[i] <1000) || (orbitalParams[i].Parent == -1 && (d/lr<1)) || (currentBody == -1 && 0.5*(orbitalParams[i].a/Math.abs(d))*screen.canvas.height/Math.tan(camFOV*Math.PI/360)>100 && d/lr<1)){
-            var p = objectPos[i];
-            p = addvec(p,[-objectRadii[i]*camM[2],-objectRadii[i]*camM[5],-objectRadii[i]*camM[8]]);
-            appendText(p,-20,objectColor[i],0,objectNames[i]);
-        }}
+            var r = 0.5*(orbitalParams[i].a/Math.abs(depth3d(objectPos[i])))*screen.canvas.height/Math.tan(camFOV*Math.PI/360)
+            if((0.1<d/orbitalParams[i].a && d/orbitalParams[i].a<10 && orbitalParams[i].Parent != -1) || (d/objectRadii[i] <1000) || (orbitalParams[i].Parent == -1 && (d/lr<1)) || (currentBody == -1 && d<lr &&(r>100 && r<screen.canvas.width*50))||(selectedBody==i)){
+                var p = objectPos[i];
+                p = addvec(p,[-objectRadii[i]*camM[2],-objectRadii[i]*camM[5],-objectRadii[i]*camM[8]]);
+                appendText(p,-20,objectColor[i],0,objectNames[i]);
+            }
+        }
         i += 1;
     }
     if(drawOrbits){
@@ -778,9 +780,10 @@ function UpdateScene(){
         while(i<objectNames.length){
             var orb = getOrbitNow(i,T);
             setColor(objectColor[i]);
+            var r = 0.5*(orbitalParams[i].a/Math.abs(depth3d(objectPos[i])))*screen.canvas.height/Math.tan(camFOV*Math.PI/360);
             if(orb.Parent == -1){
                 var parentpos = [0,0,0];
-            }else if((0.1<camD/orb.a && camD/orb.a<50) || (currentBody == -1 && orbitalParams[i].Parent != -1 && 0.5*(orbitalParams[i].a/Math.abs(depth3d(objectPos[i])))*screen.canvas.height/Math.tan(camFOV*Math.PI/360)>30)){
+            }else if((0.1<camD/orb.a && camD/orb.a<50)||(currentBody == -1 && (r>100 && r<screen.canvas.width*50))){
                 var parentpos = objectPos[orb.Parent];
                 var distance = Math.sqrt(Math.pow(objectPos[i][0]-camV[0],2)+Math.pow(objectPos[i][1]-camV[1],2)+Math.pow(objectPos[i][2]-camV[2],2));
                 drawOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,parentpos,orb.frame,60,1,objectColor[i]);
@@ -789,10 +792,9 @@ function UpdateScene(){
         }
     }
     //Earth
-    appendSurface(1,0,"#ffffff",0);
+    appendSurface(1,0,"#004386",0);
     //appendSurface(5,1,"#ffdf75",0);
     
-    //appendTri(objectPos[7],addvec(objectPos[7],[1e8,0,0]),addvec(objectPos[7],[0,0,1e8]),"#ffffff",0);
     //Jupiter
     appendSurface(6,1,"#ffdf75",0);
     appendSurface(6,2,"#ff0000",0);
@@ -815,13 +817,17 @@ window.onmouseup = function(e){mouse.d = false};
 MainCanvas.onmousedown = function(e){mouse.d = true};
 MainCanvas.ondrag = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
 MainCanvas.onwheel = function(e){
-    if(currentBody != -1){
-        camD *= Math.exp(0.25*(e.deltaY/100));
+    if((mouse.x<500*UIscale && 150*UIscale<(screen.canvas.height-mouse.y) && (screen.canvas.height-mouse.y)<650*UIscale)&&(selectedBody != -1)){
+        infoScroll += -e.deltaY/3;
     }else{
-        camFOV *= Math.exp(0.25*(e.deltaY/100));
-    }
-    if(camFOV>120){
-        camFOV = 120;
+        if(currentBody != -1){
+            camD *= Math.exp(0.25*(e.deltaY/100));
+        }else{
+            camFOV *= Math.exp(0.25*(e.deltaY/100));
+        }
+        if(camFOV>90){
+            camFOV = 90;
+        }
     }
     
 };
@@ -902,8 +908,8 @@ function UpdateCamera(){
             camD *= Math.exp(3*dt);
         }else{
             camFOV *= Math.exp(3*dt);
-            if(camFOV>120){
-                camFOV = 120;
+            if(camFOV>90){
+                camFOV = 90;
             }
         }
 
@@ -924,13 +930,11 @@ function UpdateCamera(){
         }
         if(hit != -1){
             var r = 0.5*(orbitalParams[hit].a/Math.abs(hitd))*screen.canvas.height/Math.tan(camFOV*Math.PI/360);
-            console.log(r);
             if(r < 40 && hit != -1){
                 while(r < 40 && (orbitalParams[hit].Parent != -1) && hit != -1){
                     hit = orbitalParams[hit].Parent;
                     hitd = depth3d(objectPos[hit]);
                     r = 0.5*(orbitalParams[hit].a/Math.abs(hitd))*screen.canvas.height/Math.tan(camFOV*Math.PI/360);
-                    console.log(hit);
                 }
             }
         }
@@ -1096,8 +1100,8 @@ function Render(){
         var type = draw[i][0];
         if (type == "d"){
             setColor(draw[i][4]);
-            var d = depth3d(vert[draw[i][1]]);
-            if(d/draw[i][2] < 250){
+            var dist = depth3d(vert[draw[i][1]]);
+            if(Math.abs(dist)/(draw[i][2])<250 && draw[i][2]>0){
                 drawsphere3d(vert[draw[i][1]],draw[i][2],[1,0,0,0,1,0,0,0,1]);
             }else{
                 drawdot3d(vert[draw[i][1]],draw[i][2]);
@@ -1238,7 +1242,7 @@ function RenderUI(){
         //draw rectangle for the thingy
         setColor("#53535393");
         cam3dCenter = [250*UIscale,0];
-        drawRect(-screen.canvas.width/2,screen.canvas.height/2-(150)*UIscale,500*UIscale,-Math.min(600*UIscale,screen.canvas.height-50-screen.canvas.height/2+(150)*UIscale));
+        drawRect(-screen.canvas.width/2,screen.canvas.height/2-(150)*UIscale,500*UIscale,-600);
         setColor("#ffffff");
         //List name and if the camera is tracking it
         drawText(objectNames[selectedBody],[-screen.canvas.width/2+5,screen.canvas.height/2-(155)*UIscale],"left",String(Math.round(36*UIscale))+"px courier");
@@ -1249,31 +1253,77 @@ function RenderUI(){
         text = [];
         //Add all of the selected planets information into the text var:
         i = selectedBody;
+        var val = 0;
+        var val2 = 0;
         text.push([24,"Physical info:"]);
-        text.push([18,"Mass: "+String(Math.round(objectMass[i]/G))+"kg"]);
-        text.push([18,"Radius: "+String(Math.round(objectRadii[i]/1000))+"km"]);
-        text.push([18,"Rotation Period: "+String(Math.round(rotP[i]/360)/10)+"hours"]);
+
+        text.push([18,""]);
+        text.push([18,"Radius:             "+String(Math.round(objectRadii[i]/1000))+"km"]);
+        val = rotP[i];
+        if(val != Infinity){
+            text.push([18,"Rotation Period:    "+String(Math.floor(Math.abs(val)/86400))+"days "+String(mod(Math.floor(Math.abs(val)/3600),24))+"h "+String(mod(Math.floor(Math.abs(val)/60),60))+"m "+String(Math.round(mod(Math.abs(val),60)*10)/10)+"sec "]);
+        }else{
+            text.push([18,"Rotation Period:    "+"Doesn't Rotate"]);
+        }
+        //Get the parent root, or I guess the "star"; the thing that the object orbits that that object orbtis. Then checks the next object's orbital year.
+        //i.e. if a spacestation orbited the moon it would get earths year, since everything that orbits the moon or earth is tied to its year.
+        var i2 = i
+        while(orbitalParams[i2].Parent != -1 && orbitalParams[orbitalParams[i2].Parent].Parent != -1){
+            i2 = orbitalParams[i2].Parent;
+        }
+        val2 = 360/((360/orbitalParams[i2].P)+orbitalRates[i2].dw+orbitalRates[i2].dL);
+        val = Math.abs(1/(1/val - 1/val2));
+        //All that was used to get the day length:
+        text.push([18,"Surface Day Length: "+String(Math.floor(val/86400))+"days "+String(mod(Math.floor(val/3600),24))+"h "+String(mod(Math.floor(val/60),60))+"m "+String(Math.round(mod(val,60)*10)/10)+"sec "]);
+        //Gravity
+        val = objectGMass[i]/Math.pow(objectRadii[i],2);
+        val = val/9.798678767875959;
+        text.push([18,"Surface Gravity:    "+String(Math.round(val*1000)/1000)+" x Earth's"]);
+        //Mass
+        text.push([18,"Mass:               "+String(Math.round(objectGMass[i]/G))+"kg"]);
+        text.push([18,""]);
 
         if(orbitalParams[i].Parent != -1){
         text.push([24,"Orbit info:"]);
+        text.push([18,""]);
         text.push([18,"Orbits: "+String(objectNames[orbitalParams[i].Parent])]);
         text.push([18,"Orbit radius: "+String(Math.round(orbitalParams[i].a/1000))+"km"]);
-        text.push([18,"Orbit Period: "+String(Math.round(orbitalParams[i].P/8640)/10)+"days"]);
+        val = 360/((360/orbitalParams[i].P)+orbitalRates[i].dw+orbitalRates[i].dL);
+        text.push([18,"Orbit Period: "+String(Math.floor(val/86400))+"days "+String(mod(Math.floor(val/3600),24))+"h "+String(mod(Math.floor(val/60),60))+"m "+String(Math.round(mod(val,60)*10)/10)+"sec "]);
         }else{
         text.push([24,"Location info:"]);
+        text.push([18,""]);
         text.push([18,""]);
         text.push([18,"Distance to Sun: "+String(Math.round(10*orbitalParams[i].a/lr)/10)+"lr"]);
         text.push([18,""]);
         }
+        text.push([18,""]);
+        text.push([24,"Description:"]);
+        text.push([18,""]);
+        var disp = objectDesc[i].split("\n");
+        if(disp == ""){
+            text.push([18,"-"]);
+        }else{
+            var i2=0
+            while(i2<disp.length){
+                text.push([18,disp[i2]]);
+                i2 += 1;
+            }
+        }
+        text.push([18,""]);
+        text.push([24,"Things"]);
+
 
         
 
 
         
-        var val = 0
+        var val = infoScroll;
         //draw all the textual information that was put in to the text variable:
         for(var i=0;i < text.length;i+=1){
-            drawText(text[i][1],[-screen.canvas.width/2+5,screen.canvas.height/2-(210+val)*UIscale],"left",String(Math.round(text[i][0]*UIscale))+"px courier");
+            if(val<500*UIscale && -5<val){
+                drawText(text[i][1],[-screen.canvas.width/2+25*UIscale,screen.canvas.height/2-(230+val)*UIscale],"left",String(Math.round(text[i][0]*UIscale))+"px courier");
+            }
             val += text[i][0];
         }
 
@@ -1375,14 +1425,19 @@ function RenderUI(){
     drawText("FPS:"+String(Math.round(1/dt)),[-screen.canvas.width/2+5,-screen.canvas.height/2+100],"left",String(Math.round(12*UIscale))+"px courier");
 }
 function mainLoop(){
-    if((objectNames[0]!="Sun" || objectNames[1]!="Earth")&& !halt){
+    if(!filesLoaded.includes("Objects.json")){
         mainCanvas.width = 5;
         mainCanvas.height = 5;
         fillScreen("#ffffff");
-        alert("error loading objects, try refresh the page");
-        console.log("error");
+        //alert("error loading objects, try refresh the page");
+        console.log("Started To early, retrying");
         halt = true;
+        Init();
+        //window.location.reload();
     }else{
+    if(!(objectNames[0]!="Sun" || objectNames[1]!="Earth")){
+        halt = false
+    }
     //time handling
     Told = currentT;
     currentT = new Date().getTime()/1000;
@@ -1393,6 +1448,8 @@ function mainLoop(){
     T += TimeSpeed*dt;
     if(!halt){
         requestAnimationFrame(mainLoop);
+    }else{
+        Init();
     }
     resizeWindow();
     UpdateBodies();
@@ -1411,24 +1468,54 @@ function mainLoop(){
     }
 }
 
+async function GetFile(filePath){
+    try{
+        const response = await fetch(filePath);
+        if(!response.ok){
+            console.error("response was not doing ok");
+        }
+        const result = await response.json();
+        loadObjects(result);
+        filesLoaded.push(filePath);
+        return filePath;
+    }catch(error){
+        console.error("you suck (talking to myslef\n\nIn all seriousness though the File \""+filePath+"\" could not load");
+    }
 
-const f1 = fetch("Objects.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("sorry file1 failed to load, please refresh page"));
+}
+async function LoadAll(){
+    var i = 0
+        while(i<files2Try.length){
+            if((filesLoaded.includes(files2Try[i][1]) || files2Try[i][1]=="") && !filesLoaded.includes(files2Try[i][0])){
+                await GetFile(files2Try[i][0]);
+            }
+            i += 1;
+        }
+}
+
+LoadAll();
+Init();
 
 
-//Wait 0.5 seconds for main file to load before loading others
 
-currentT = new Date().getTime()/1000;
-Told = currentT
-while(currentT-Told<0.5){
+//GetFile("MajorMoons.json");
+//console.log("should load the moons");
+//Init();
+//GetFile("Craft.json");
+//GetFile("Stars.json");
+
+//waits till other objects are loaded to start the things
+
+
+function Init(){
     currentT = new Date().getTime()/1000;
+    Told = 0;
+    T = currentT;
+    requestAnimationFrame(mainLoop);
 }
 
 
-const f2 = fetch("MajorMoons.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("sorry file2 failed to load, please refresh page"));
-const f3 = fetch("Craft.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("sorry file3 failed to load, please refresh page"));
-const f4 = fetch("Stars.json").then(response => response.json()).then(data => loadObjects(data)).catch(error => console.error("sorry file4 failed to load, please refresh page"));
-
-
+//Function executed to read a file and append the objects to the project:
 
 function loadObjects(file){
     var list = Object.entries(file);
@@ -1456,8 +1543,8 @@ function loadObjects(file){
             orb.w = parseFloat(tle.substring(34+69,42+69));
             orb.M0 = parseFloat(tle.substring(43+69,51+69));
             orb.P = 86400/parseFloat(tle.substring(52+69,63+69));
-            orb.a = Math.pow(objectMass[orb.Parent]*Math.pow(orb.P/(2*Math.PI),2),1/3);
-            orbR.dL = 180/Math.PI*(-1.5*(Math.pow(objectRadii[orb.Parent],2)/Math.pow(orb.a*(1-orb.e*orb.e),2))*(1.08262668e-3*Math.sqrt(objectMass[orb.Parent]/Math.pow(orb.a,3)))*cos(orb.i));
+            orb.a = Math.pow(objectGMass[orb.Parent]*Math.pow(orb.P/(2*Math.PI),2),1/3);
+            orbR.dL = 180/Math.PI*(-1.5*(Math.pow(objectRadii[orb.Parent],2)/Math.pow(orb.a*(1-orb.e*orb.e),2))*(1.08262668e-3*Math.sqrt(objectGMass[orb.Parent]/Math.pow(orb.a,3)))*cos(orb.i));
             var M = [1,0,0,0,1,0,0,0,1];
             M = MtimesM(M,RotM("z",orb.w));
             M = MtimesM(M,RotM("x",orb.i));
@@ -1473,12 +1560,21 @@ function loadObjects(file){
         if(orb.t0 =="J2000"){
             orb.t0 = 946728000;
         }
-        if(typeof obj.Type != undefined){
+        if(typeof obj.Type != 'undefined'){
             var type = obj.Type;
         }else{
             var type = "unspecified";
         }
-        addObject(name,obj.Params.Radius,obj.Params.Color,obj.Params.Mass,type);
+        if(typeof obj.Params.GM != 'undefined'){
+            var GMass = obj.Params.GM;
+        }else{
+            if(typeof obj.Params.Mass != 'undefined'){
+                var GMass = G*obj.Params.Mass;
+            }else{
+                var GMass = 0;
+            }
+        }
+        addObject(name,obj.Params.Radius,obj.Params.Color,GMass,type);
         addObjectOrbit(orb.a,orb.e,orb.i,orb.L,orb.w,orb.M0,orb.t0,orb.Parent,orb.P,orb.frame);
         if(typeof orbR != 'undefined'){
             addObjectOrbitRate(orbR.da,orbR.de,orbR.di,orbR.dL,orbR.dw,orbR.dM);
@@ -1510,21 +1606,34 @@ function loadObjects(file){
             rotL0.push(0);
             rotP.push(Infinity);
         }
+        if(typeof obj.Desc != 'undefined'){
+            objectDesc.push(obj.Desc);
+        }else{
+            objectDesc.push("");
+        }
+        var ind = objectNames.length-1;
+        //Doing a quick check to make sure the orbital values make sense based off the object it's orbiting's mass.
+        //If they are not the same, it flags it and outputs it to the console.
+        if(orbitalParams[ind].Parent != -1){
+            var val = 360/((360/orbitalParams[ind].P)+orbitalRates[ind].dw+orbitalRates[ind].dL);
+            var val2 = 2*Math.PI*Math.sqrt(Math.pow(orbitalParams[ind].a,3)/objectGMass[orbitalParams[ind].Parent]);
+            var Magnitude = Math.abs(Math.log10(val/val2));
+            if(Magnitude>0.004){
+                var text = "\nDouble check values, the object: \""+objectNames[ind]+"\" id:["+String(ind)+"] has a orbital period missmatch."+"\n\nThey are off by "+String(Magnitude)+" orders of Magnitude.\n\nExpected via Parent Mass:  "+String(val2)+"\nValue from data:           "+String(val);
+                if(Magnitude>0.1){
+                    if(Magnitude>1){
+                        console.error("WARNING, MORE THAN ONE ORDER OF MAGNITUDE\n\n"+text);
+                    }else{
+                        console.error("Error is significant:\n\n"+text);
+                    }
+                }else{
+                    console.log(text);
+                }
+            }
+        }
         i += 1;
     }
 }
-
-//waits till other objects are loaded to start the things
-document.addEventListener("DOMContentLoaded", function () {
-    console.log("Loaded");
-    currentT = new Date().getTime()/1000;
-    Told = 0;
-    T = currentT;
-    requestAnimationFrame(mainLoop);
-});
-
-
-
 
 
 //And now for the coastline data:
