@@ -5,7 +5,7 @@ A planetarium-like web app that displays planets, moons, and satellites live in 
 
 ![screenshot from project](Project.png)
 
- - Live Planet Positions plus moons
+ - Live Planet Positions plus moons and satellites
  - View the night sky from many different cities
  - Track the International Space Station and other satellites
  - change camera angle to match a planet's axis and view orbits with a better perspective
