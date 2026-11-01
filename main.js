@@ -791,7 +791,7 @@ function UpdateScene(){
         var d = depth3d(objectPos[i]);
         if(d>0 && drawNames){
             var r = 0.5*(orbitalParams[i].a/Math.abs(depth3d(objectPos[i])))*screen.canvas.height/Math.tan(camFOV*Math.PI/360)
-            if((0.1<d/orbitalParams[i].a && d/orbitalParams[i].a<10 && orbitalParams[i].Parent != -1) || (d/objectRadii[i] <1000) || (orbitalParams[i].Parent == -1 && (d/lr<1)) || (currentBody == -1 && d<lr &&(r>100 && r<screen.canvas.width*50))||(selectedBody==i)){
+            if((0.1<d/orbitalParams[i].a && d/orbitalParams[i].a<10 && orbitalParams[i].Parent != -1) || (d/objectRadii[i] <1000) || (orbitalParams[i].Parent == -1 && ((d/lr<1)||i==0)) || (currentBody == -1 && d<lr &&(r>100 && r<screen.canvas.width*50))||(selectedBody==i)){
                 var p = objectPos[i];
                 p = addvec(p,[-objectRadii[i]*camM[2],-objectRadii[i]*camM[5],-objectRadii[i]*camM[8]]);
                 appendText(p,-20,objectColor[i],0,objectNames[i]);
@@ -968,10 +968,10 @@ function UpdateCamera(){
         
     }else if(mouseOld.d && !mouse.d && !mouseDrag.d){
         var m = [mouse.x-window.innerWidth/2,window.innerHeight/2 - mouse.y];
-        var i = objectNames.length - 1;
+        var i = 0;
         var hit = -1;
         var hitd = Infinity;
-        while(i>=0){
+        while(i<objectNames.length){
             var p = proj3d(objectPos[i]);
             var d = depth3d(objectPos[i]);
             var Dist2d = Math.sqrt(Math.pow(p[0]-m[0],2)+Math.pow(p[1]-m[1],2));
@@ -979,7 +979,7 @@ function UpdateCamera(){
                 hit = i;
                 hitd = d;
             }
-            i -= 1;
+            i += 1;
         }
         if(hit != -1){
             var r = 0.5*(orbitalParams[hit].a/Math.abs(hitd))*screen.canvas.height/Math.tan(camFOV*Math.PI/360);
