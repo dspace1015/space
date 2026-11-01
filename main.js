@@ -10,6 +10,8 @@ var bodyAxis = [];
 var objectTypes = [];
 var rotP = [];
 var rotL0 = [];
+
+
 var maxT = 253402300800;
 var minT = -156806496560;
 var currentT = 0.0;
@@ -17,23 +19,33 @@ var T = 0.0;
 var TimeSpeed = 1;
 var Told = 0.0;
 var dt = 0;
+
+
 var camV = [-3,0,0];
 var camM = [1,0,0,0,1,0,0,0,1];
 var camP = 0;
 var camY = 0;
-var camD = 6e7;
+var camD = 2e7;
 var cam3dCenter = [0,0];
+var camFrame = 0;
+
 var long = 0.0;
 var lat = 0.0;
+var homeid = -1;
+
 var drawOrbits = true;
 var drawNames = true;
 var tracking = false;
 var lightTtime = true;
-var camFrame = 0;
+
 var UIscale = 1.0;
 var Menu = 0;
+var displayIntro = true;
+
 var infoScroll = 0;
 var halt = false;
+var typingInSearch = false;
+var typeInput = "";
 
 //Files to try is the order in which files are loaded.
 //the format is as follows:
@@ -43,10 +55,20 @@ var halt = false;
 var files2Try = [
     ["Objects.json",""],
     ["MajorMoons.json","Objects.json"],
-    ["Craft.json","MajorMoons.json"],
-    ["Stars.json","Craft.json"]
+    ["Dwarf.json","MajorMoons.json"],
+    ["Craft.json","Dwarf.json"],
+    ["Stars.json","Craft.json"],
+    ["City.json",""]
 ]
+
+var cityNames = []
+var cityStates = [];
+var cityCountries = [];
+var cityLat = [];
+var cityLong = [];
+
 var filesLoaded = [];
+var textLoaded = [];
 
 var camFOV = 70;
 var defaultFOV = 70;
@@ -58,7 +80,6 @@ var selectedBody = -1;
 var currentBody = 1;
 var aspect = window.innerWidth / window.innerHeight;
 
-selectedBody = 2;
 
 const G = 6.6743015e-11;
 const c = 2.99792458e8;
@@ -74,7 +95,6 @@ var drawOrder = [];
 
 const mainCanvas = document.getElementById("MainCanvas");
 const screen = mainCanvas.getContext("2d");
-
 
 //Functions ______________________________________________________________
 function resizeWindow(){
@@ -591,7 +611,7 @@ function getDrawDist(){
         }else if (type =="t"){
             d = (depth3d(vert[draw[i][1]]) + depth3d(vert[draw[i][2]]) + depth3d(vert[draw[i][3]]))/3;
         }else if (type == "surf"){
-            d = Math.abs(depth3d(objectPos[draw[i][2]]))-objectRadii[draw[i][2]];
+            d = 0.99*Math.sqrt(Math.pow(depth3d(vert[draw[i][1]]),2)-Math.pow(objectRadii[draw[i][2]],2));
         }
         if(d>0){
             d = Math.log(d);
@@ -749,6 +769,10 @@ function UpdateBodies(){
     }
 }
 function UpdateScene(){
+    if(homeid != -1){
+        lat = cityLat[homeid];
+        long = cityLong[homeid];
+    }
     vert = [];
     draw = [];
     var i = 0;
@@ -793,6 +817,13 @@ function UpdateScene(){
     }
     //Earth
     appendSurface(1,0,"#004386",0);
+    if(homeid != -1){
+        var pos = latLong2xyz(1,cityLong[homeid],cityLat[homeid]);
+        if(depth3d(pos)/objectRadii[1]<20){
+            appendDot(pos,-1,"#ffffff",0);
+            appendText(pos,-20,"#ffffff",0,cityNames[homeid]);
+        }
+    }
     //appendSurface(5,1,"#ffdf75",0);
     
     //Jupiter
@@ -811,10 +842,10 @@ function UpdateScene(){
 
 MainCanvas.onmousemove = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
 MainCanvas.ontouchmove = function(e){mouse.x = e.touches[0].clientX, mouse.y = e.touches[0].clientY};
-MainCanvas.ontouchstart = function(e){mouse.d = true,mouse.x = e.touches[0].clientX, mouse.y = e.touches[0].clientY};
+MainCanvas.ontouchstart = function(e){mouse.d = true,mouse.x = e.touches[0].clientX, mouse.y = e.touches[0].clientY;if(displayIntro){displayIntro = false;}};
 window.ontouchend = function(e){mouse.d = false};
 window.onmouseup = function(e){mouse.d = false};
-MainCanvas.onmousedown = function(e){mouse.d = true};
+MainCanvas.onmousedown = function(e){mouse.d = true;if(displayIntro){displayIntro = false;}};
 MainCanvas.ondrag = function(e){mouse.x = e.clientX, mouse.y = e.clientY};
 MainCanvas.onwheel = function(e){
     if((mouse.x<500*UIscale && 150*UIscale<(screen.canvas.height-mouse.y) && (screen.canvas.height-mouse.y)<650*UIscale)&&(selectedBody != -1)){
@@ -832,6 +863,8 @@ MainCanvas.onwheel = function(e){
     
 };
 window.onkeyup = function(e){pressedKeys[e.keyCode] = false;
+    if(!typingInSearch){
+        
     if(e.keyCode == 79){
         drawOrbits = 1-drawOrbits;
     }
@@ -847,9 +880,18 @@ window.onkeyup = function(e){pressedKeys[e.keyCode] = false;
     if(e.keyCode == 84){
         tracking = 1-tracking;
     }
+    }
 }
 
 window.onkeydown = function(e) {
+    if(typingInSearch){
+        if(e.keyCode != 8){
+            typeInput += String(e.key);
+        }else if(typeInput.length>0){
+            typeInput = typeInput.substring(0,typeInput.length-1);
+        }
+        
+    }else{
     pressedKeys[e.keyCode] = true;
     if(e.keyCode == 191){
         TimeSpeed *= -1
@@ -887,6 +929,7 @@ window.onkeydown = function(e) {
         TimeSpeed = 1;
         T = currentT;
     }
+    }
 }
 
 function UpdateCamera(){
@@ -894,7 +937,17 @@ function UpdateCamera(){
     var x = screen.canvas.width;
     var y = screen.canvas.height;
     if(!(-360*1.5*UIscale-5+x<mouse.x && mouse.x<x && mouse.y<-50*UIscale-5+y && mouse.y>-50*UIscale-5+y - 180*1.5*UIscale && Menu)){
-
+    
+    if(!mouseOld.d && mouse.d){
+        mouseDrag.x = mouse.x
+        mouseDrag.y = mouse.y
+    }
+    if(!mouse.d && mouseOld.d){
+        mouseDrag.d = false;
+    }
+    if(Math.sqrt(Math.pow(mouse.x-mouseDrag.x,2)+Math.pow(mouse.y-mouseDrag.y,2))>20 && (mouseOld.d)){
+        mouseDrag.d = true;
+    }
     if(mouseOld.d && !mouse.d && !mouseDrag.d && (x - 50*UIscale < mouseOld.x && mouseOld.x < x) && ( y - 50*UIscale < mouseOld.y && mouseOld.y < y)){
         Menu = 1-Menu;
     }else if(mouseOld.d && mouse.d && !mouseDrag.d && (x - 105*UIscale < mouse.x && mouse.x < x -55*UIscale) && ( y - 50*UIscale<mouse.y & mouse.y < y)){
@@ -912,7 +965,7 @@ function UpdateCamera(){
                 camFOV = 90;
             }
         }
-
+        
     }else if(mouseOld.d && !mouse.d && !mouseDrag.d){
         var m = [mouse.x-window.innerWidth/2,window.innerHeight/2 - mouse.y];
         var i = objectNames.length - 1;
@@ -947,7 +1000,11 @@ function UpdateCamera(){
                     camD = 4*objectRadii[currentBody];
                 }
             }else{
+                if(selectedBody != hit){
+                    infoScroll = 0;
+                }
                 selectedBody = hit;
+                
             }
         }
         
@@ -956,29 +1013,43 @@ function UpdateCamera(){
         tracking = false;
     }
     if(mouseOld.d && !mouse.d && !mouseDrag.d && (mouse.x<300*UIscale) && (mouse.y>screen.canvas.height-30*UIscale)){
-        ans = parseFloat(prompt("input Latitude"));
-        if(ans == ans){
-            lat = ans;
-        }
-        ans = parseFloat(prompt("input Longitude"));
-        if(ans == ans){
-            long = ans;
-        }
+        if(homeid == -1){
         mouse.y = 0
         mouse.x = 0
-        currentBody = -1;
+        var ans;
+        var name = "";
+        var state = "";
+        var country = "";
+        ans = (prompt("City Search:\nEnter Country of hometown (for all results leave blank)"));
+        if(ans == ans){
+            country = ans;
+        }
+        ans = (prompt("City Search:\nEnter State of hometown (for all results leave blank)"));
+        if(ans == ans){
+            state = ans;
+        }
+        ans = (prompt("City Search:\nEnter Name of hometown (for all results leave blank)"));
+        if(ans == ans){
+           name = ans;
+        }
+        var results = searchCity(name,state,country);
+        var i = 0
+        var text = ""
+        while(i<results.length){
+            text += (String(i+1)+": "+cityNames[results[i]]+", "+cityStates[results[i]]+", "+cityCountries[results[i]]+"\n");
+            i += 1;
+        }
+        i = parseFloat(prompt("These were the top results:\n\n"+text+"\n\nPlease type the number of the chosen city"));
+        if(i == i){
+            homeid = results[i-1];
+        }
+        }else if(currentBody != -1){
+            currentBody = -1;
+        }else{
+            currentBody = 1;
+        }
     }
 
-    if(!mouseOld.d && mouse.d){
-        mouseDrag.x = mouse.x
-        mouseDrag.y = mouse.y
-    }
-    if(!mouse.d && mouseOld.d){
-        mouseDrag.d = false;
-    }
-    if(Math.sqrt(Math.pow(mouse.x-mouseDrag.x,2)+Math.pow(mouse.y-mouseDrag.y,2))>20 && (mouseOld.d)){
-        mouseDrag.d = true;
-    }
     if(mouseOld.d && mouse.d){
         if(currentBody != -1){
         camP += -3*camFOV*(mouse.y-mouseOld.y)/window.innerHeight;
@@ -990,8 +1061,36 @@ function UpdateCamera(){
     }
     }else{
         if(mouseOld.d){
-            lat = ( y - mouse.y -50*UIscale-5)/(1.5*UIscale)-90;
-            long = -( x - mouse.x -5)/(1.5*UIscale)+180;
+            mouse.d = false;
+            mouse.y = 0
+            mouse.x = 0
+            var ans;
+            var name = "";
+            var state = "";
+            var country = "";
+            ans = (prompt("City Search:\nEnter Country of hometown (for all results leave blank)"));
+            if(ans == ans){
+                country = ans;
+            }
+            ans = (prompt("City Search:\nEnter State of hometown (for all results leave blank)"));
+            if(ans == ans){
+                state = ans;
+            }
+            ans = (prompt("City Search:\nEnter Name of hometown (for all results leave blank)"));
+            if(ans == ans){
+               name = ans;
+            }
+            var results = searchCity(name,state,country);
+            var i = 0
+            var text = ""
+            while(i<results.length){
+                text += (String(i+1)+": "+cityNames[results[i]]+", "+cityStates[results[i]]+", "+cityCountries[results[i]]+"\n");
+                i += 1;
+            }
+            i = parseFloat(prompt("These were the top results:\n\n"+text+"\n\nPlease type the number of the chosen city"));
+            if(i == i){
+                homeid = results[i-1];
+            }
         }
     }
     if(T>maxT){
@@ -1227,7 +1326,43 @@ function RenderUI(){
         data = "Local Camera"
         drawText(data,[-screen.canvas.width/2+5,screen.canvas.height/2-(80+24*2)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");  
     }
-    
+    //Draw intro:
+    var text = [
+        "This is a web app where you can explore objects",
+        "throughout the solar system. It updates in real",
+        "time, and you can change the time with the",
+        "(<) , (>) , (/), and (r) keys on your keyboard.",
+        "",
+        "As you explore, click on different objects to",
+        "learn more about them. Click them twice to move ",
+        "to them. Press the (c) key to change the camera ",
+        "axis.",
+        "",
+        "Besides the 3D view, there is also the ground",
+        "view, which you can access in the bottom left",
+        "corner. A map view with your city can be found",
+        "by clicking the circle button on the right.",
+        "",
+        "If you ever get lost on the controls just hover",
+        "over the top.",
+        "",
+        "Explore around! (Click anywhere to close)"
+        
+    ]
+    if(displayIntro){
+        setColor("#3b3b3be1");
+        drawRect(-400*UIscale,-300*UIscale,800*UIscale,600*UIscale);
+        setColor("#ffffff");
+        drawText("Welcome!",[0,270*UIscale],"center",String(Math.round(74*UIscale))+"px courier"); 
+        var i = 0
+        while(i<text.length){
+            drawText(text[i],[-350*UIscale,(180-24*i)*UIscale],"left",String(Math.round(24*UIscale))+"px courier");
+            i += 1;
+        }
+        drawText("Warning,unsuported on mobile",[0,-350*UIscale],"center",String(Math.round(32*UIscale))+"px courier"); 
+        drawText("Please use desktop",[0,-375*UIscale],"center",String(Math.round(32*UIscale))+"px courier"); 
+        
+    }
 
     if(selectedBody != -1){
         //draw outline for the body:
@@ -1239,7 +1374,7 @@ function RenderUI(){
             setColor("#ffffff");
             drawCircle(p2[0],p2[1],(1+0.1*Math.sin(currentT*Math.PI*2))*(10+1.3*(screen.canvas.height*0.5*objectRadii[selectedBody]/(d*Math.tan(camFOV*Math.PI/360)))),1,false);
         }
-        //draw rectangle for the thingy
+        //draw rectangle for the info thingy
         setColor("#53535393");
         cam3dCenter = [250*UIscale,0];
         drawRect(-screen.canvas.width/2,screen.canvas.height/2-(150)*UIscale,500*UIscale,-600);
@@ -1294,7 +1429,7 @@ function RenderUI(){
         text.push([24,"Location info:"]);
         text.push([18,""]);
         text.push([18,""]);
-        text.push([18,"Distance to Sun: "+String(Math.round(10*orbitalParams[i].a/lr)/10)+"lr"]);
+        text.push([18,"Distance to Sun: "+String(Math.round(10*orbitalParams[i].a/lr)/10)+"ly"]);
         text.push([18,""]);
         }
         text.push([18,""]);
@@ -1309,12 +1444,7 @@ function RenderUI(){
                 text.push([18,disp[i2]]);
                 i2 += 1;
             }
-        }
-        text.push([18,""]);
-        text.push([24,"Things"]);
-
-
-        
+        }       
 
 
         
@@ -1334,8 +1464,16 @@ function RenderUI(){
     setColor("#808080");
     drawRect(-screen.canvas.width/2,-screen.canvas.height/2,300*UIscale,30*UIscale);
     setColor("#000000")
-    drawText(" View From Location",[-screen.canvas.width/2,-screen.canvas.height/2+26*UIscale],"left",String(Math.round(24*UIscale))+"px courier");
-    setColor("#ffffff");
+    if(homeid == -1){
+        drawText(" Set Home Location",[-screen.canvas.width/2,-screen.canvas.height/2+26*UIscale],"left",String(Math.round(24*UIscale))+"px courier");
+    }else if(currentBody == -1){
+        drawText(" Go Back to 3D view",[-screen.canvas.width/2,-screen.canvas.height/2+26*UIscale],"left",String(Math.round(24*UIscale))+"px courier");
+    }else{
+        drawText("View From The Ground",[-screen.canvas.width/2+10,-screen.canvas.height/2+26*UIscale],"left",String(Math.round(24*UIscale))+"px courier");
+    }
+    
+    
+        setColor("#ffffff");
     setColor("#808080");
     var x = screen.canvas.width/2
     var y = -screen.canvas.height/2
@@ -1411,7 +1549,7 @@ function RenderUI(){
         drawText("(c) change camera",[-100*UIscale,screen.canvas.height/2 - (2*24+18*8)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
         drawText("(o) toggle orbits",[-100*UIscale,screen.canvas.height/2 - (2*24+18*9)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
         drawText("(n) toggle names",[-100*UIscale,screen.canvas.height/2 - (2*24+18*10)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
-        drawText("(t) track selected object",[-100*UIscale,screen.canvas.height/2 - (2*24+18*11)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
+        drawText("(t) lock on selected object",[-100*UIscale,screen.canvas.height/2 - (2*24+18*11)*UIscale],"left",String(Math.round(18*UIscale))+"px courier");
         drawText("Mouse scroll and drag to move camera",[-200*UIscale,screen.canvas.height/2 - (2*24)*UIscale],"left",String(Math.round(24*UIscale))+"px courier");
     }
     var d = "lightTraveltime: ";
@@ -1468,26 +1606,43 @@ function mainLoop(){
     }
 }
 
-async function GetFile(filePath){
+async function GetFileJson(filePath){
+    const response = await fetch(filePath);
+    if(!response.ok){
+        console.error("response was not doing ok");
+        return ;
+    }
     try{
-        const response = await fetch(filePath);
-        if(!response.ok){
-            console.error("response was not doing ok");
-        }
         const result = await response.json();
-        loadObjects(result);
+        if(filePath == "City.json"){
+            loadCities(result);
+        }else{
+            loadObjects(result);
+        }
         filesLoaded.push(filePath);
-        return filePath;
-    }catch(error){
-        console.error("you suck (talking to myslef\n\nIn all seriousness though the File \""+filePath+"\" could not load");
+    }catch{
+        console.error("The File \""+filePath+"\" could not load");
     }
 
 }
+//Searches the loaded city database with the key parameters, returns the indexes in the database that match.
+function searchCity(subName,subState,subCountry){
+    var i = 0 
+    var idList = [];
+    while(i<cityNames.length){
+        if(cityNames[i].includes(subName) && cityStates[i].includes(subState) && cityCountries[i].includes(subCountry)){
+            idList.push(i);
+        }
+        i += 1
+    }
+    return idList;
+}
+
 async function LoadAll(){
     var i = 0
         while(i<files2Try.length){
             if((filesLoaded.includes(files2Try[i][1]) || files2Try[i][1]=="") && !filesLoaded.includes(files2Try[i][0])){
-                await GetFile(files2Try[i][0]);
+                await GetFileJson(files2Try[i][0]);
             }
             i += 1;
         }
@@ -1497,23 +1652,12 @@ LoadAll();
 Init();
 
 
-
-//GetFile("MajorMoons.json");
-//console.log("should load the moons");
-//Init();
-//GetFile("Craft.json");
-//GetFile("Stars.json");
-
-//waits till other objects are loaded to start the things
-
-
 function Init(){
     currentT = new Date().getTime()/1000;
     Told = 0;
     T = currentT;
     requestAnimationFrame(mainLoop);
 }
-
 
 //Function executed to read a file and append the objects to the project:
 
@@ -1633,6 +1777,17 @@ function loadObjects(file){
         }
         i += 1;
     }
+}
+
+//City Data:
+//https://simplemaps.com/data/world-cities
+function loadCities(file){
+    var list = Object.entries(file);
+    cityNames = file.CityNames;
+    cityStates = file.CityStates;
+    cityCountries = file.CityCountries;
+    cityLat = file.CityLat;
+    cityLong = file.CityLong;
 }
 
 

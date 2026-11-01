@@ -56,7 +56,7 @@
         "Period": 86164.0996642,
         "Long0": 280.46061837
     },
-    "Desc":"Earth is the third planet from the Sun.\nThis planet is where every human has \ngrown up and is the only planet we know of \nthat we can live on.\n\nIt contains a breathable atmosphere\ncomposed of 21% Oxygen and 78% Nitrogen,\nalong with ~1% of other gases.\n\nBeing where we are from its orbit is the \neasiest to get to and therefore it has\nthe highest density of orbiting objects\nand satellites in the solar system. At the\nsame time,it is the most diverse, with\nvast oceans anddeep forests, that it turns\nout we have mapped more of the surfaces\nof the Moon and Mars than we have of\nour own planet."
+    "Desc":"Earth is the third planet from the Sun.\nThis planet is where every human has \ngrown up and is the only planet we know of \nthat we can live on.\n\nIt contains a breathable atmosphere\ncomposed of 21% Oxygen and 78% Nitrogen,\nalong with ~1% of other gases.\n\nBeing where we are from its orbit is the \neasiest to get to and therefore it has\nthe highest density of orbiting objects\nand satellites in the solar system. At the\nsame time,it is the most diverse, with\nvast oceans and deep forests, that it turns\nout we have mapped more of the surfaces\nof the Moon and Mars than we have of\nour own planet."
 },
 "Moon":{
     "Type":"Moon",
@@ -229,8 +229,9 @@
         "AxisRA": 268.057,
         "AxisDE": 64.495,
         "Period": 35730,
-        "Long0": 0
-    }
+        "Long0": 80
+    },
+    "Desc":"Jupiter is the largest planet in the\nsolar system. It has 4 main moons and\nmany other smaller ones. This app\nonly depicts the main four, because\nthey are the only ones visible through\na regular telescope.\n\nJuipter is a Gas Giant, meaning it has\nno regular surface, being made of\nmostly hydrogen the pressure just gets\nhigher as you go deeper with no main\ncutoff for where it stars.\n\nIt has one giant storm raging in its\nsouthern hemisphere commonly known\nas the \"Great Red Spot\". As it\nturns out, it is actually shrinking,\nit used to be able to fit 3 Earths\ninside, now it only has room for one."
 },
 "Saturn":{
     "Type":"Planet",
@@ -264,7 +265,8 @@
         "AxisDE": 83.537,
         "Period": 38361.6,
         "Long0": 0
-    }
+    },
+    "Desc":"Saturn is the second largest planet and is\nalso a gas giant. The planet is most\ncommonly known for its very visual rings.\n\nHowever without its rings, there are still\ninteresting facts about Saturn. It is the\nLeast dense planet in the solar system\nbeing even less dense then water(which is\nwhy many say it could float if there\nexisted an ocean big enough.\n\nAnother facinating fact but not depicted\nin this web app is that Saturn is\nactually the most flattened planet.\nWhile it does not spin the fastest, it\ndoes rotate once in only ~10 hours, and\nthis combined with its low density means\nits own rotation fights gravity, pulling\nsome of its material to the outside.\nIn pictures it is noticably flattened, but\nunfortunately I have not had the time to\nadd the feature here.\n\nSaturn also has the most number of moons\ndiscovered for one planet. I will not\nlist the number here because it grows\nevery day but there are more than hundreds.\nThere are many hidden in Saturn's rings\nthat carve out small gaps in them with\ntheir gravity."
 },
 "Uranus":{
     "Type":"Planet",
@@ -298,7 +300,8 @@
         "AxisDE": -15.175,
         "Period": 62064,
         "Long0": 0
-    }
+    },
+    "Desc":"Uranus is the seventh planet from the Sun\nand is known as an ice Giant, It is also\nthe coldest planet in the solar system. It\nHas rings like Saturn but they are much \nfainter. \n\nUranus is also tilted on its axis by ~98°,\nmeaning that it spins almost perpendicular\nto its orbit. Because of this uranus has\nthe most interesting seasons in the solar\nsystem, in the summer months where one\nside faces the sun and the other is\nin shadow for half\nits orbit, then the other half of the orbit\nit switches. Suprizingly, however, Uranus\ndoes not have too much activity in its\nsurface(At least when Voyager 1 passed)\nBecause it is so far from the Sun it\ndoesn'tdo much work to heat it up and\neffect its weather."
 },
 "Neptune":{
     "Type":"Planet",
@@ -332,6 +335,7 @@
         "AxisDE": 43.46,
         "Period": 57996,
         "Long0": 0
-    }
+    },
+    "Desc":"Neptune is the 8th planet from the Sun and\nit is the second coldest.\n\nThere is a common misconseption that\nNeptune is a dark blue color, but this\ncomes from a false color Image that was\nenhanced for higher contrast. In reality it\nis closer in color to Uranus.\n\nNeptune also haw super sonic winds in its\natmosphere. Unlike Uranus, Neptune has\nstronger weather systems and even a\n\"Great Dark Spot\", Similar to Jupiter's \n\"Great Red Spot\".\n"
 }
 }

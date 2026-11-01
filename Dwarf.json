@@ -1,0 +1,188 @@
+{
+"Pluto System":{
+    "Type":"Dwarf Planet",
+    "orbit":{
+        "Parent":"Sun",
+        "frame":"Ecliptic",
+        "a": 5.9223952361e12,
+        "e": 0.2518378778576892,
+        "i": 17.14771140999114,
+        "L": 110.2923840543057,
+        "w": 113.7090015158565,
+        "M0": 38.68366347318184,
+        "t0": "J2000",
+        "P": 7.8608203036e9
+    },
+    "Params":{
+        "Radius": 0,
+        "Color": "#c7cac0",
+        "GM": 9.7542914132e11
+    },
+    "Rotation":{
+        "AxisRA": 132.993,
+        "AxisDE": -6.163,
+        "Period": 551855.9808,
+        "Long0": 0
+    },
+    "Desc":"Pluto Actually moves around its \"Moon\"\nCharon, so it orbits around this\nbarycenter that orbits the sun"
+},
+"Pluto":{
+    "Type":"Dwarf Planet",
+    "orbit":{
+        "Parent":"Pluto System",
+        "frame":[132.993,-6.163],
+        "a": 2.1315104676e6,
+        "e": 0,
+        "i": 0,
+        "L": 0,
+        "w": 180,
+        "M0": 304.1,
+        "t0": "J2000",
+        "P": 551855.9808
+    },
+    "Params":{
+        "Radius": 1188300,
+        "Color": "#c7cac0",
+        "GM": 8.6932777037e11
+    },
+    "Rotation":{
+        "AxisRA": 132.993,
+        "AxisDE": -6.163,
+        "Period": 551855.9808,
+        "Long0": 0
+    },
+    "Desc":"Pluto is not considered a planet by\nThe International Astronomical Union, for\nthe sole reason that there are many\nother objects like it in similar orbits."
+},
+"Charon":{
+    "Type":"Dwarf Planet Binary/Moon",
+    "orbit":{
+        "Parent":"Pluto System",
+        "frame":[132.993,-6.163],
+        "a": 1.9600e7,
+        "e": 0,
+        "i": 0,
+        "L": 0,
+        "w": 0,
+        "M0": 304.1,
+        "t0": "J2000",
+        "P": 551855.9808
+    },
+    "Params":{
+        "Radius": 606000,
+        "Color": "#c7cac0",
+        "GM": 1.0610137095e11
+    },
+    "Rotation":{
+        "AxisRA": 132.993,
+        "AxisDE": -6.163,
+        "Period": 551855.9808,
+        "Long0": 0
+    },
+    "Desc":"Pluto's moon Charon is arguably\none of the most interesting in the\nsolar system because it is heavy\nenough to pull pluto to orbit around\nit slightly. The two dance\naroudn their common Barycenter."
+},
+"Styx:":{
+    "Type":"Moon",
+    "orbit":{
+        "Parent":"Pluto System",
+        "frame":[132.993,-6.163],
+        "a": 4.3200e7,
+        "e": 0.025	,
+        "i": 0,
+        "L": 0,
+        "w": 322.5,
+        "M0": 358.1,
+        "t0": "J2000",
+        "P": 1741824
+    },
+    "Params":{
+        "Radius": 5240,
+        "Color": "#a0a0a0",
+        "GM": 1.0610137095e11
+    },
+    "Rotation":{
+        "AxisRA": 132.993,
+        "AxisDE": -6.163,
+        "Period": 1741824,
+        "Long0": 0
+    },
+    "Desc":"Imagine being named after a twig"
+},
+"Nix":{
+    "Type":"Moon",
+    "orbit":{
+        "Parent":"Pluto System",
+        "frame":[132.993,-6.163],
+        "a": 4.9300e7,
+        "e": 0.015,
+        "i": 0,
+        "L": 0,
+        "w": 31.4,
+        "M0": 338.2,
+        "t0": "J2000",
+        "P": 2147040
+    },
+    "Params":{
+        "Radius": 18593,
+        "Color": "#a0a0a0",
+        "GM": 1.0610137095e11
+    },
+    "Rotation":{
+        "AxisRA": 132.993,
+        "AxisDE": -6.163,
+        "Period": 2147040,
+        "Long0": 0
+    }
+},
+"Kerberos":{
+    "Type":"Moon",
+    "orbit":{
+        "Parent":"Pluto System",
+        "frame":[132.993,-6.163],
+        "a": 5.8300e7,
+        "e": 0.010,
+        "i": 0.4,
+        "L": 314.3,
+        "w": 32.1,
+        "M0": 276.1,
+        "t0": "J2000",
+        "P": 2779488
+    },
+    "Params":{
+        "Radius": 5979,
+        "Color": "#a0a0a0",
+        "GM": 1.0610137095e11
+    },
+    "Rotation":{
+        "AxisRA": 132.993,
+        "AxisDE": -6.163,
+        "Period": 2779488,
+        "Long0": 0
+    }
+},
+"Hydra":{
+    "Type":"Moon",
+    "orbit":{
+        "Parent":"Pluto System",
+        "frame":[132.993,-6.163],
+        "a": 6.5200e7,
+        "e": 0.009,
+        "i": 0.3,
+        "L": 114.3,
+        "w": 139.3,
+        "M0": 335.0,
+        "t0": "J2000",
+        "P": 3300480
+    },
+    "Params":{
+        "Radius": 19218,
+        "Color": "#a0a0a0",
+        "GM": 1.0610137095e11
+    },
+    "Rotation":{
+        "AxisRA": 132.993,
+        "AxisDE": -6.163,
+        "Period": 3300480,
+        "Long0": 0
+    }
+}
+}

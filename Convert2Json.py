@@ -1,6 +1,6 @@
 import math
 file = open("Henry Draper(HD) catalogue.txt","r+",encoding="utf-8")
-output = open("Starsoutput.txt","w+")
+output = open("Starsoutput.txt","w+",encoding="utf-8")
 
 data = file.readlines()
 i = 0
@@ -9,6 +9,7 @@ DE = []
 R = []
 Mag = []
 name = []
+nameHD = []
 #Ignore my sloppy code this is just to convert the database to json
 while(i<len(data)):
     j = 0
@@ -18,7 +19,7 @@ while(i<len(data)):
         val += text[j]
         j += 1
     j += 1
-    name += [val]
+    nameHD += [val]
     val = ""
     while(j<len(text) and text[j]!= "\t" and text[j]!= "\n"):
         val += text[j]
@@ -66,13 +67,19 @@ while(i<len(data)):
         DE += [r]
     except:
         DE += [0]
+    val = ""
+    while(j<len(text) and text[j]!= "\t" and text[j]!= "\n" and text[j]!= ","):
+        val += text[j]
+        j += 1
+    j += 1
+    name += [val]
     
     i += 1
 
 i = 0
 outtext = "{"
 while(i<len(data)):
-    outtext += "\""+name[i]+"\":{\n\t"
+    outtext += "\""+name[i]+"/"+nameHD[i]+"\":{\n\t"
     outtext += "\"Pos\":{\n\t\t"
     outtext += "\"RA\": " + str(RA[i]) + ",\n\t\t"
     outtext += "\"DE\": " + str(DE[i]) + ",\n\t\t"
